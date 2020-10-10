@@ -24,12 +24,12 @@ for iMonths = 1:12
 end
 
 %Plot Balances
-plot(AX, Months, Balances.WellsFargo, 'Color',[0.07,0.62,1.00], 'LineWidth',1.5, 'LineStyle','-')
-plot(AX, Months, Balances.RobinHood, 'Color',[1.00,0.60,0.16], 'LineWidth',1.5, 'LineStyle','-')
-plot(AX, Months, Balances.Assets, 'Color',[0.72,0.27,1.00], 'LineWidth',1.5, 'LineStyle','-')
-plot(AX, Months, Balances.FinnCU, 'Color',[0.00,1.00,0.53], 'LineWidth',1.5, 'LineStyle','-')
-plot(AX, Months, Balances.PayPal, 'Color',[0.74,0.65,0.49], 'LineWidth',1.5, 'LineStyle','-')
-plot(AX, Months, Balances.NSLSC, 'Color',[1.00,0.00,0.00], 'LineWidth',1.5, 'LineStyle','-')
+plot(AX, Months, Balances.WellsFargo, 'Color',[0.07,0.62,1.00], 'LineWidth',1.5, 'LineStyle','-', 'Marker','o')
+plot(AX, Months, Balances.RobinHood, 'Color',[0.00,1.00,0.53], 'LineWidth',1.5, 'LineStyle','-', 'Marker','o')
+plot(AX, Months, Balances.Assets, 'Color',[0.72,0.27,1.00], 'LineWidth',1.5, 'LineStyle','-', 'Marker','o')
+plot(AX, Months, Balances.FinnCU, 'Color',[1.00,0.60,0.16], 'LineWidth',1.5, 'LineStyle','-', 'Marker','o')
+plot(AX, Months, Balances.PayPal, 'Color',[0.74,0.65,0.49], 'LineWidth',1.5, 'LineStyle','-', 'Marker','o')
+plot(AX, Months, Balances.NSLSC, 'Color',[1.00,0.00,0.00], 'LineWidth',1.5, 'LineStyle','-', 'Marker','o')
 
 %Axes props
 AX.XAxis.Exponent = 0;
@@ -44,4 +44,7 @@ legend(AX,'WellsFargo','RobinHood','Assets','FinnCU','PayPal','NSLSC');
 AX.Legend.Color = [0.15 0.15 0.15];
 AX.Legend.EdgeColor = [1 1 1];
 AX.Legend.TextColor = [1 1 1];
+AX.Legend.Location = 'northwest';
+
+
 end
