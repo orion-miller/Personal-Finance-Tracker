@@ -1,36 +1,45 @@
 function EXP = ExpensesReader(app)
+%Reads in .csv expense sheets from bank, and returns to expenses_lists field
+%of data struct
 
 cd('D:\!Orion_Programs\!Source_Controlled\Finances\Expense_Sheets')
 [FileNames, FilePath] = uigetfile('*.csv','Select Expense Spreadsheets','MultiSelect','on');
-% cd(FilePath)
+
+try
+    cd(FilePath)
+catch
+    EXP = [];
+    return
+end
 
 EXP = [];
+EXP.Type = [];
+EXP.Amount = [];
+EXP.Description = [];
+S = [];
 
 for iFiles = 1:length(FileNames)
     
     TempTable = readtable(FileNames{iFiles});
     TempStruct = table2struct(TempTable);
     
-    for iLines = height(TempTable)
-%         Idx = length(EXP)+1;
-%         EXP(end+1).Type = '-';
-%         EXP(end+1).Amount = TempTable(iLines,2);
-%         EXP(end+1).Description = TempTable(iLines,5);
+    for iLines = 1:height(TempTable)
 
-        if contains(TempStruct(iLines,5),{'Reverb','amazon','ebay'})
-            EXP(iLines,1) = 'Other';
-        elseif contains(TempStruct(iLines,5),{'Wren Northlake','Mint','Duke','ENERGY','Anytime'})
-            EXP(iLines,1) = 'Bills';            
-        elseif contains(TempStruct(iLines,5),{'GEICO'})
-            EXP(iLines,1) = 'Car';    
-        elseif contains(TempStruct(iLines,5),{'ROBINHOOD','PAYPAL''Secured Card'})
-            EXP(iLines,1) = 'Transfer';             
+        if contains(TempStruct(iLines).Var5,{'Reverb','amazon','ebay'})
+            S(iLines).Type = 'Other';
+        elseif contains(TempStruct(iLines).Var5,{'Wren Northlake','Mint','Duke','ENERGY','Anytime'})
+            S(iLines).Type = 'Bills';            
+        elseif contains(TempStruct(iLines).Var5,{'GEICO'})
+            S(iLines).Type = 'Car';    
+        elseif contains(TempStruct(iLines).Var5,{'ROBINHOOD','PAYPAL''Secured Card'})
+            S(iLines).Type = 'Transfer';             
         else
-            EXP(iLines,1) = '-';            
+            S(iLines).Type = '-';            
         end
-
-
         
+        S(iLines).Amount = TempStruct(iLines).Var2;
+        S(iLines).Description = TempStruct(iLines).Var5;     
     end
     
+    EXP = [EXP; S];
 end
