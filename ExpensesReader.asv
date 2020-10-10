@@ -19,17 +19,16 @@ for iFiles = 1:length(FileNames)
 
         if contains(TempStruct(iLines,5),{'Reverb','amazon','ebay'})
             EXP(iLines,1) = 'Other';
-        elseif contains(TempStruct(iLines,5),{'Wren Northlake','Mint','Duke','ENERGY','Anytime'})
+        elseif contains(TempStruct(iLines,5),{'Wren Northlake','Mint','Duke','ENERGY'})
             EXP(iLines,1) = 'Bills';            
         elseif contains(TempStruct(iLines,5),{'GEICO'})
             EXP(iLines,1) = 'Car';    
-        elseif contains(TempStruct(iLines,5),{'ROBINHOOD','PAYPAL''Secured Card'})
-            EXP(iLines,1) = 'Transfer';             
-        else
-            EXP(iLines,1) = '-';            
+        elseif contains(TempStruct(iLines,5),{'GEICO'})
+            EXP(iLines,1) = 'Car';             
+            
         end
 
-
+        EXP(iLines,1) = '-';
         
     end
     

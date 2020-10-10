@@ -14,6 +14,7 @@ for iMonth = 1:12
     Data.Y2020(iMonth).Balance_Deltas = [];
     Data.Y2020(iMonth).Incomes = [];    
     Data.Y2020(iMonth).Expenses = [];
+    Data.Y2020(iMonth).Expenses_Lists = [];    
     Data.Y2020(iMonth).Notes = {''};
     
     Data.Y2020(iMonth).Balances.WellsFargo = 0;
