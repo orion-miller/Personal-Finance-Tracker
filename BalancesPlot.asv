@@ -2,8 +2,9 @@ function BalancesPlot(app)
 
 Months = 1:1:12;
 
-cla(app.Balance_Axes)
-hold(app.Balance_Axes, 'on')
+AX = app.Balance_Axes;
+cla(AX)
+hold(AX, 'on')
 
 Balances = [];
 Balances.WellsFargo = [];
@@ -14,14 +15,31 @@ Balances.PayPal = [];
 Balances.NSLSC = [];
 
 for iMonths = 1:12
-    Balances.WellsFargo = [Balances.WellsFargo, app.Data.(app.YearName)(1:12).Balances.WellsFargo
-    
-    
+    Balances.WellsFargo = [Balances.WellsFargo, app.Data.(app.YearName)(iMonths).Balances.WellsFargo];
+    Balances.RobinHood = [Balances.RobinHood, app.Data.(app.YearName)(iMonths).Balances.RobinHood];
+    Balances.Assets = [Balances.Assets, app.Data.(app.YearName)(iMonths).Balances.Assets];    
+    Balances.FinnCU = [Balances.FinnCU, app.Data.(app.YearName)(iMonths).Balances.FinnCU];    
+    Balances.PayPal = [Balances.PayPal, app.Data.(app.YearName)(iMonths).Balances.PayPal];    
+    Balances.NSLSC = [Balances.NSLSC, app.Data.(app.YearName)(iMonths).Balances.NSLSC];        
 end
-Balances = 
 
-plot(app.Balance_Axes, Months, app.Data.(app.YearName)(1:12).Balances.WellsFargo)
+%Plot Balances
+plot(AX, Months, Balances.WellsFargo, 'Color',[0.07,0.62,1.00], 'LineWidth',1.5, 'LineStyle','-')
+plot(AX, Months, Balances.RobinHood, 'Color',[1.00,0.60,0.16], 'LineWidth',1.5, 'LineStyle','-')
+plot(AX, Months, Balances.Assets, 'Color',[0.72,0.27,1.00], 'LineWidth',1.5, 'LineStyle','-')
+plot(AX, Months, Balances.FinnCU, 'Color',[0.00,1.00,0.53], 'LineWidth',1.5, 'LineStyle','-')
+plot(AX, Months, Balances.PayPal, 'Color',[0.74,0.65,0.49], 'LineWidth',1.5, 'LineStyle','-')
+plot(AX, Months, Balances.NSLSC, 'Color',[1.00,0.00,0.00], 'LineWidth',1.5, 'LineStyle','-')
 
+%Axes props
+AX.XAxis.Exponent = 0;
+AX.YAxis.Exponent = 0;
+AX.XGrid = 'on';
+AX.YGrid = 'on';
+AX.Title.Color = [1 1 1];
+AX.Title.String = 'Balances by Month';
+
+%Legend
 
 
 
