@@ -1,0 +1,14 @@
+
+%Creates the initial struct to hold all the finances info. Should only be
+%made once.
+
+clc
+clearvars
+
+Data = [];
+Data.Y2020 = [];
+Data.Y2020.Balances = [];
+Data.Y2020.Deltas = [];
+Data.Y2020.Expenses = [];
+Data.Y2020.Notes = [];
+Data.Y2020.Complete = [];
