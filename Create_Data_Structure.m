@@ -8,10 +8,13 @@ cd('D:\!Orion_Programs\!Source_Controlled\Finances')
 
 Data = [];
 Data.Y2020 = [];
-Data.Y2020.Balances = [];
-Data.Y2020.Deltas = [];
-Data.Y2020.Expenses = [];
-Data.Y2020.Notes = [];
-Data.Y2020.Complete = [];
+
+for iMonth = 1:12
+    Data.Y2020(iMonth).Balances = [];
+    Data.Y2020(iMonth).Balance_Deltas = [];
+    Data.Y2020(iMonth).Incomes = [];    
+    Data.Y2020(iMonth).Expenses = [];
+    Data.Y2020(iMonth).Notes = {''};
+end
 
 save('OM_Finance_Data','Data');
