@@ -16,22 +16,22 @@ for iMonth = 1:12
     Data.Y2020(iMonth).Expenses = [];
     Data.Y2020(iMonth).Notes = {''};
     
-    Data.Y2020(iMonth).Balances.WellsFargo = nan;
-    Data.Y2020(iMonth).Balances.RobinHood = nan;
-    Data.Y2020(iMonth).Balances.Assets = nan;    
-    Data.Y2020(iMonth).Balances.FinnCU = nan; 
-    Data.Y2020(iMonth).Balances.PayPal = nan;     
-    Data.Y2020(iMonth).Balances.NSLSC = nan;    
+    Data.Y2020(iMonth).Balances.WellsFargo = 0;
+    Data.Y2020(iMonth).Balances.RobinHood = 0;
+    Data.Y2020(iMonth).Balances.Assets = 0;    
+    Data.Y2020(iMonth).Balances.FinnCU = 0; 
+    Data.Y2020(iMonth).Balances.PayPal = 0;     
+    Data.Y2020(iMonth).Balances.NSLSC = 0;    
     
-    Data.Y2020(iMonth).Incomes.Job = nan;    
-    Data.Y2020(iMonth).Incomes.Other = nan;     
+    Data.Y2020(iMonth).Incomes.Job = 0;    
+    Data.Y2020(iMonth).Incomes.Other = 0;     
       
-    Data.Y2020(iMonth).Expenses.Bills = nan; %Rent plus any other bills
-    Data.Y2020(iMonth).Expenses.Food = nan;
-    Data.Y2020(iMonth).Expenses.Car = nan;      
-    Data.Y2020(iMonth).Expenses.Transfers = nan;    
-    Data.Y2020(iMonth).Expenses.WorkTravel = nan;     
-    Data.Y2020(iMonth).Expenses.Other = nan;     
+    Data.Y2020(iMonth).Expenses.Bills = 0; %Rent plus any other bills
+    Data.Y2020(iMonth).Expenses.Food = 0;
+    Data.Y2020(iMonth).Expenses.Car = 0;      
+    Data.Y2020(iMonth).Expenses.Transfers = 0;    
+    Data.Y2020(iMonth).Expenses.WorkTravel = 0;     
+    Data.Y2020(iMonth).Expenses.Other = 0;     
 end
 
 save('OM_Finance_Data','Data');
