@@ -10,11 +10,18 @@ Data = [];
 Data.Y2020 = [];
 
 for iMonth = 1:12
-    Data.Y2020(iMonth).Balances = [];
+    Data.Y2020(iMonth).Balances = [];    
     Data.Y2020(iMonth).Balance_Deltas = [];
     Data.Y2020(iMonth).Incomes = [];    
     Data.Y2020(iMonth).Expenses = [];
     Data.Y2020(iMonth).Notes = {''};
+    
+    Data.Y2020(iMonth).Balances.WellsFargo = [];
+    Data.Y2020(iMonth).Balances.RobinHood = [];    
+    Data.Y2020(iMonth).Balances.FinnCU = []; 
+    Data.Y2020(iMonth).Balances.PayPal = [];     
+    Data.Y2020(iMonth).Balances.NSLSC = [];     
+    
 end
 
 save('OM_Finance_Data','Data');
