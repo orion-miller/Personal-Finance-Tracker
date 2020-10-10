@@ -13,33 +13,28 @@ catch
 end
 
 EXP = [];
-EXP.Type = [];
-EXP.Amount = [];
-EXP.Description = [];
-S = [];
 
-for iFiles = 1:length(FileNames)
+for iFiles = 1:length(FileNames)    
+    TempStruct = table2struct(readtable(FileNames{iFiles}));
     
-    TempTable = readtable(FileNames{iFiles});
-    TempStruct = table2struct(TempTable);
-    
-    for iLines = 1:height(TempTable)
+    for iLines = 1:length(TempStruct)
+        Idx = length(EXP)+1;
 
-        if contains(TempStruct(iLines).Var5,{'Reverb','amazon','ebay'})
-            S(iLines).Type = 'Other';
+        if contains(TempStruct(iLines).Var5,{'Reverb','amazon','ebay','AMAZON'})
+            EXP(Idx).Type = 'Other';
         elseif contains(TempStruct(iLines).Var5,{'Wren Northlake','Mint','Duke','ENERGY','Anytime'})
-            S(iLines).Type = 'Bills';            
-        elseif contains(TempStruct(iLines).Var5,{'GEICO'})
-            S(iLines).Type = 'Car';    
-        elseif contains(TempStruct(iLines).Var5,{'ROBINHOOD','PAYPAL''Secured Card'})
-            S(iLines).Type = 'Transfer';             
+            EXP(Idx).Type = 'Bills';            
+        elseif contains(TempStruct(iLines).Var5,{'GEICO','FIRESTONE','MARATHON PETRO'})
+            EXP(Idx).Type = 'Car';    
+        elseif contains(TempStruct(iLines).Var5,{'ROBINHOOD','PAYPAL','Secured Card','SECURED CARD'})
+            EXP(Idx).Type = 'Transfer';   
+        elseif contains(TempStruct(iLines).Var5,{'VERDE','PUBLIX','CHICK-FIL-A','HARRIS TE','TARGET','5GUYS'})
+            EXP(Idx).Type = 'Food';              
         else
-            S(iLines).Type = '-';            
+            EXP(Idx).Type = '-';            
         end
         
-        S(iLines).Amount = TempStruct(iLines).Var2;
-        S(iLines).Description = TempStruct(iLines).Var5;     
-    end
-    
-    EXP = [EXP; S];
+        EXP(Idx).Amount = TempStruct(iLines).Var2;
+        EXP(Idx).Description = TempStruct(iLines).Var5;     
+    end    
 end
