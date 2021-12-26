@@ -20,7 +20,7 @@ for iFiles = 1:length(FileNames)
     for iLines = 1:length(TempStruct)
         Idx = length(EXP)+1;
 
-        if contains(TempStruct(iLines).Var5,{'Reverb','amazon','ebay','AMAZON'})
+        if contains(TempStruct(iLines).Var5,{'Reverb','amazon','ebay','AMAZON','Amzn'})
             EXP(Idx).Type = 'Other';
         elseif contains(TempStruct(iLines).Var5,{'Wren Northlake','Mint','Duke','ENERGY','Anytime'})
             EXP(Idx).Type = 'Bills';            
