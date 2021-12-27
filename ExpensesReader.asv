@@ -13,7 +13,7 @@ EXP = []; %Structure to store expenses
 try
     cd(FilePath)
 catch
-    return %User hit cancel on uifilebox
+    return
 end
 
 
