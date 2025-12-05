@@ -1,4 +1,5 @@
 import sys
+import os
 from pathlib import Path
 import ctypes
 
@@ -28,10 +29,25 @@ import ollama
 class Properties:
     def __init__(self):
         self.APP_VERSION = "1.0"
-        self.data_folder = "D:\\!Orion_Documents\\Financial\\!OM_Finance_Tracker\\2025\\WF_Checking" # None
+        self.data_folder = "D:\\!Orion_Documents\\Financial\\!OM_Finance_Tracker" # None
         self.income_types = ["-", "Job", "Investment", "Other"]
         # self.expense_types = ["-", "Bills", "Groceries","Takeout","Car","Travel","Other"]
         self.expense_types = ["Transfer", "Bills", "Groceries","Takeout","Car","Travel","Entertainment","Other"]
+        self.db = {
+            "2025": {
+                "12": {
+                    "bs": {},
+                    "ie":  {},
+                    "notes": ""
+                }           
+        }   
+        }
+        self.year_sel = "2025"
+        self.month_sel = "12"
+        self.year_p1 = "2024"
+        self.month_p1 = "12"
+        self.year_p2 = "2025"
+        self.month_p2 = "12"
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -41,6 +57,10 @@ class MainWindow(QMainWindow):
 
         #Properties
         self.ps = Properties()
+        try:
+            self.ps.db = np.load(os.path.join(self.ps.data_folder,"db.npz"), allow_pickle=True)["db"].item()
+        except:
+            pass
 
         #Startup tasks
         self.setWindowTitle(f"Finance Tracker {self.ps.APP_VERSION}")
@@ -54,14 +74,17 @@ class MainWindow(QMainWindow):
 
         self.ui.comboBox_year.addItems(["2020", "2021", "2022", "2023", "2024", "2025"])        
         self.ui.comboBox_month.addItems(["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"])
+        # self.ui.comboBox_month.setItemData(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)        
         self.ui.comboBox_year.setCurrentText("2025")
         self.ui.comboBox_month.setCurrentText("Dec")
         self.ui.comboBox_year_2.addItems(["2020", "2021", "2022", "2023", "2024", "2025"])        
         self.ui.comboBox_month_2.addItems(["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"])
+        # self.ui.comboBox_month_2.setItemData(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)          
         self.ui.comboBox_year_2.setCurrentText("2025")
         self.ui.comboBox_month_2.setCurrentText("Dec")
         self.ui.comboBox_year_3.addItems(["2020", "2021", "2022", "2023", "2024", "2025"])        
         self.ui.comboBox_month_3.addItems(["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"])
+        # self.ui.comboBox_month_3.setItemData(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)          
         self.ui.comboBox_year_3.setCurrentText("2025")
         self.ui.comboBox_month_3.setCurrentText("Dec")                
         # self.ui.statusbar.sizeGripEnabled = False
@@ -129,15 +152,39 @@ class MainWindow(QMainWindow):
             case "Income + Expense":        
                 self.ui.tabWidget.setCurrentIndex(1)            
     #----------------------------------------------------------
+    def load_month(self):
+
+        #create blank entries in database if month does not exist
+        if self.ps.year_sel not in self.ps.db:
+            self.db[self.ps.year_sel] = {}
+       
+        if self.ps.month_sel not in self.ps.db[self.ps.year_sel]:
+            self.db[self.ps.year_sel][self.ps.month_sel] = {
+                "bs": {},
+                "ie":  {},
+                "notes": ""  
+                }
+        else:
+            pass #populate ui components with existing data
+             
+    #----------------------------------------------------------
     def save_month(self):
+
+        self.ps.db[self.ps.year_sel][self.ps.month_sel]["notes"] = self.ui.textEdit.toPlainText() 
+
+        #write out to file
+        np.savez_compressed(os.path.join(self.ps.data_folder,"db.npz"), db=self.ps.db)
+
         msg = QMessageBox(QMessageBox.NoIcon, "Month Saved Successfully", "")
         msg.setIcon(QMessageBox.Information)
         msg.setText("Your changes have been saved")
         msg.exec()             
     #----------------------------------------------------------
     def save_csv(self):
-       self.statusBar().showMessage("Saved", 5000) 
-        # self.show_temporary_message("Sheet saved", 2500)       
+        self.ps.db[self.ps.year_sel][self.ps.month_sel]["ie"][self.ui.sheetDropdown.currentText()] = self.ui.sheetTable.model()._df.copy()
+
+        self.statusBar().showMessage("Saved sheet", 5000) 
+        # self.show_temporary_message("Sheet saved", 2500)  
     #----------------------------------------------------------
     def load_csv(self):
         # File dialog with CSV filter
@@ -174,7 +221,7 @@ class MainWindow(QMainWindow):
                 if response_isolated in self.ps.expense_types:
                     df['Type'][i] = response_isolated                                   
 
-            self.ui.progress.setVisible(False) # hide until needed 
+            self.ui.progress.setVisible(False)
 
             # Show in table
             model = TableModel(df)
