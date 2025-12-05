@@ -110,12 +110,15 @@ class MainWindow(QMainWindow):
         self.ui.actionAbout.triggered.connect(self.show_info)
         self.ui.sheetLoad.clicked.connect(self.load_csv)
         self.ui.sheetSave.clicked.connect(self.save_csv)
-        self.ui.pushButton_refresh.clicked.connect(self.setup_bar_graph)        
+        self.ui.sheetDelete.clicked.connect(self.delete_csv)        
+        self.ui.pushButton_refresh.clicked.connect(self.setup_bar_graph)    
+        self.ui.pushButton_loadmonth.clicked.connect(self.load_month)            
         self.ui.pushButton_savemonth.clicked.connect(self.save_month)
         self.ui.tabWidget.currentChanged.connect(self.on_tab_changed)
         self.ui.tabWidget_2.currentChanged.connect(self.on_tab_changed_2)
-        # self.ui.saveMonth.clicked.connect(self.save_month)
-
+        self.ui.comboBox_month.currentIndexChanged.connect(self.month_changed)
+        self.ui.comboBox_month_2.currentIndexChanged.connect(self.month_changed)    
+        self.ui.comboBox_month_3.currentIndexChanged.connect(self.month_changed)
     #----------------------------------------------------------
     def pick_folder(self):
         folder = QFileDialog.getExistingDirectory(
@@ -156,17 +159,17 @@ class MainWindow(QMainWindow):
 
         #create blank entries in database if month does not exist
         if self.ps.year_sel not in self.ps.db:
-            self.db[self.ps.year_sel] = {}
+            self.ps.db[self.ps.year_sel] = {}
        
         if self.ps.month_sel not in self.ps.db[self.ps.year_sel]:
-            self.db[self.ps.year_sel][self.ps.month_sel] = {
+            self.ps.db[self.ps.year_sel][self.ps.month_sel] = {
                 "bs": {},
                 "ie":  {},
                 "notes": ""  
                 }
-        else:
-            pass #populate ui components with existing data
-             
+            
+        #set ui elements with existing data
+        self.ui.textEdit.setPlainText(self.ps.db[self.ps.year_sel][self.ps.month_sel]["notes"])    
     #----------------------------------------------------------
     def save_month(self):
 
@@ -178,13 +181,28 @@ class MainWindow(QMainWindow):
         msg = QMessageBox(QMessageBox.NoIcon, "Month Saved Successfully", "")
         msg.setIcon(QMessageBox.Information)
         msg.setText("Your changes have been saved")
-        msg.exec()             
+        msg.exec()   
+    #----------------------------------------------------------
+    def month_changed(self):
+        self.ps.month_sel = str(self.ui.comboBox_month.currentIndex() + 1)
+        self.ps.month_p1 = str(self.ui.comboBox_month_2.currentIndex() + 1)
+        self.ps.month_p2 = str(self.ui.comboBox_month_3.currentIndex() + 1)                           
     #----------------------------------------------------------
     def save_csv(self):
         self.ps.db[self.ps.year_sel][self.ps.month_sel]["ie"][self.ui.sheetDropdown.currentText()] = self.ui.sheetTable.model()._df.copy()
 
         self.statusBar().showMessage("Saved sheet", 5000) 
         # self.show_temporary_message("Sheet saved", 2500)  
+    #----------------------------------------------------------
+    def delete_csv(self):
+        #delete entry from database
+        self.ps.db[self.ps.year_sel][self.ps.month_sel]["ie"].pop(self.ui.sheetDropdown.currentText(), None)
+
+        #clear table
+        self.ui.sheetTable.setModel(TableModel(pd.DataFrame()))
+
+        #remove entry from dropdown  
+        self.ui.sheetDropdown.removeItem(self.ui.sheetDropdown.currentIndex())   
     #----------------------------------------------------------
     def load_csv(self):
         # File dialog with CSV filter
