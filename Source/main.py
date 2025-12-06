@@ -29,6 +29,8 @@ import ollama
 #external fcns
 import plotting
 import utils
+import status
+from taskbar_progress import TaskbarProgress
 
 #COMPILATION CMD:
 # pyside6-uic mainwindow.ui -o mainwindow.py
@@ -45,8 +47,8 @@ class Properties:
                 "12": { #month
                     "bs": {},      #balance sheet
                     "bs_met": {},  #balance sheet metrics                    
-                    "ie":  {},     #income + expense
-                    "ie_met":  {}, #income + expense metrics                   
+                    "ie": {},      #income + expense
+                    "ie_met": {},  #income + expense metrics                   
                     "notes": ""    #general notes
                 }           
         }   
@@ -103,27 +105,44 @@ class MainWindow(QMainWindow):
         # self.ui.statusbar.sizeGripEnabled = False
         # self.statusBar.sizeGripEnabled = False
 
+        self.statusBar().setStyleSheet("""
+            QStatusBar::item { border: none; }
+            QStatusBar { border: none; }
+        """)
+
         # Create progress bar, add it to the status bar
         self.ui.progress = QProgressBar()
-        self.ui.progress.setMaximumWidth(150)      
-        self.ui.progress.setTextVisible(True)     
-        self.ui.progress.setVisible(False) # hide until needed 
+        self.ui.progress.setMaximumWidth(75)  
+        self.ui.progress.setAlignment(Qt.AlignCenter)    
+        self.ui.progress.setTextVisible(True)   
         self.ui.progress.setRange(0, 100)
+        # self.ui.progress.setStyleSheet("QProgressBar { border: none; background: transparent; }")          
+        self.ui.progress.setVisible(False) # hide until needed 
         # self.ui.statusbar().addPermanentWidget(self.ui.progress)      
         self.statusBar().addPermanentWidget(self.ui.progress)  
 
         # Create a permanent label inside the status bar (invisible at first)
-        self.status_label = QLabel("")
-        self.status_label.setStyleSheet("color: white; background: rgba(0,0,0,180); padding: 4px 10px; border-radius: 4px;")
-        self.statusBar().addPermanentWidget(self.status_label)
-        self.status_label.hide()         
+        self.ui.status_label = QLabel("")
+        # self.ui.status_label.setStyleSheet("color: white; background: rgba(0,0,0,180); padding: 4px 10px; border-radius: 4px;")
+        self.ui.status_label.setMinimumWidth(400)
+        # self.ui.status_label.setStyleSheet("QLabel { border: none; background: transparent; }")
+        self.ui.status_label.setVisible(False) # hide until needed    
+        self.statusBar().addPermanentWidget(self.ui.status_label)
+        # self.ui.statusbar().addPermanentWidget(self.status_label)        
+        # self.ui.status_label.hide()        
+
+        self.ui.status_spacer = QWidget()
+        # self.ui.status_spacer.setStyleSheet("background: transparent;")
+        self.statusBar().addPermanentWidget(self.ui.status_spacer, stretch=1) 
+        # self.statusBar().insertPermanentWidget(2, QWidget(), 1)   # index 2 = after the two widgets
 
         #Connections
         self.ui.actionOpen.triggered.connect(self.pick_folder)
         self.ui.actionAbout.triggered.connect(self.show_info)
         self.ui.sheetLoad.clicked.connect(self.load_csv)
         self.ui.sheetSave.clicked.connect(self.save_csv)
-        self.ui.sheetDelete.clicked.connect(self.delete_csv)        
+        self.ui.sheetDelete.clicked.connect(self.delete_csv)   
+        self.ui.sheetDropdown.currentIndexChanged.connect(self.changed_csv)     
         self.ui.pushButton_refresh.clicked.connect(self.refresh_plots)    
         self.ui.pushButton_loadmonth.clicked.connect(self.load_month)            
         self.ui.pushButton_savemonth.clicked.connect(self.save_month)
@@ -181,8 +200,8 @@ class MainWindow(QMainWindow):
             self.ps.db[self.ps.year_sel][self.ps.month_sel] = {
                 "bs": {},      #balance sheet
                 "bs_met": {},  #balance sheet metrics                    
-                "ie":  {},     #income + expense
-                "ie_met":  {}, #income + expense metrics                   
+                "ie": {},      #income + expense
+                "ie_met": {},  #income + expense metrics                   
                 "notes": ""    #general notes
                 }         
             
@@ -212,7 +231,11 @@ class MainWindow(QMainWindow):
     def month_changed(self):
         self.ps.month_sel = str(self.ui.comboBox_month.currentIndex() + 1)
         self.ps.month_p1 = str(self.ui.comboBox_month_2.currentIndex() + 1)
-        self.ps.month_p2 = str(self.ui.comboBox_month_3.currentIndex() + 1)                           
+        self.ps.month_p2 = str(self.ui.comboBox_month_3.currentIndex() + 1)  
+    #----------------------------------------------------------
+    def changed_csv(self):
+        sheet = self.ps.db[self.ps.year_sel][self.ps.month_sel]["ie"][self.ui.sheetDropdown.currentText()]
+        self.ui.sheetTable.setModel(TableModel(sheet))                                 
     #----------------------------------------------------------
     def save_csv(self):
         self.ps.db[self.ps.year_sel][self.ps.month_sel]["ie"][self.ui.sheetDropdown.currentText()] = self.ui.sheetTable.model()._df.copy()
@@ -242,47 +265,58 @@ class MainWindow(QMainWindow):
 
         if not file_path:
             return  # User cancelled
-        try:
-            df = pd.read_csv(
-                file_path, header=None, names=['Date', 'Amount', 'x', 'y','Description']
-            )
-            # remove unneeded columns then insert "type" column between Date and Amount
-            df.drop(df.columns[[2,3]], axis=1, inplace=True)
-            df.insert(2, "Type", "-")
+        
+        # try:
+        df = pd.read_csv(
+            file_path, header=None, names=['Date', 'Amount', 'x', 'y','Description']
+        )
+        # remove unneeded columns then insert "type" column between Date and Amount
+        df.drop(df.columns[[2,3]], axis=1, inplace=True)
+        df.insert(2, "Type", "-")
 
-            self.ui.progress.setVisible(True) 
-         
-            for i in range(len(df)):
-                prog_value = 100*(i+1)/len(df)
-                self.ui.progress.setValue(prog_value)
-                # self.ui.progress.text = f"Reading sheet: {prog_value:.0f}%"               
-                # assign initial categorizations of items using ollama
-                response = ollama.chat(model='gemma3:4b', messages=[{
-                    'role': 'user',
-                    'content': f"Return only one category from this list that best matches the expense. Return only the category itself. List: {', '.join(self.ps.expense_types)}\n\nDescription: {df['Description'][i]}\n\nCategory:"
-                }])
-                response_isolated = response['message']['content'].strip() 
+        self.ui.progress.setVisible(True) 
+        self.ui.status_label.setVisible(True)
+        # TaskbarProgress.clear(self)
+        
+        for i in range(len(df)):
+            prog_value = int(100*(i+1)/len(df))
+            self.ui.progress.setValue(prog_value)
+            self.ui.status_label.setText("Processing expenses")  
+            # TaskbarProgress.set(self, prog_value)   # ← THIS syncs to taskbar!
 
-                if response_isolated in self.ps.expense_types:
-                    df['Type'][i] = response_isolated                                   
+            # assign initial categorizations of items using ollama
+            response = ollama.chat(model='gemma3:4b', messages=[{
+                'role': 'user',
+                'content': f"Return only one category from this list that best matches the expense. Return only the category itself. List: {', '.join(self.ps.expense_types)}\n\nDescription: {df['Description'][i]}\n\nCategory:"
+            }])
+            response_isolated = response['message']['content'].strip() 
 
-            self.ui.progress.setVisible(False)
+            if response_isolated in self.ps.expense_types:
+                df['Type'].loc[i] = response_isolated                                   
 
-            # Show in table
-            model = TableModel(df)
-            self.ui.sheetTable.setModel(model)
-            self.ui.sheetTable.resizeColumnsToContents()
+        self.ui.progress.setVisible(False)
+        self.ui.status_label.setVisible(False) 
+        # TaskbarProgress.set(self, 100)   # or TaskbarProgress.error(self)           
 
-            if "Type" in df.columns:
-                col_idx = df.columns.get_loc("Type")
-                delegate = ComboBoxDelegate(self.ps.expense_types, self.ui.sheetTable)
-                self.ui.sheetTable.setItemDelegateForColumn(col_idx, delegate)     
+        # Show in table
+        model = TableModel(df)
+        self.ui.sheetTable.setModel(model)
+        self.ui.sheetTable.resizeColumnsToContents()
 
-            # Add sheet to dropdown
-            self.ui.sheetDropdown.addItem(Path(file_path).stem)
+        if "Type" in df.columns:
+            col_idx = df.columns.get_loc("Type")
+            delegate = ComboBoxDelegate(self.ps.expense_types, self.ui.sheetTable)
+            self.ui.sheetTable.setItemDelegateForColumn(col_idx, delegate)     
 
-        except Exception as e:
-            QMessageBox.critical(self, "Error Loading CSV", str(e))  
+        # Add sheet to dropdown
+        self.ui.sheetDropdown.addItem(Path(file_path).stem)
+        self.ui.sheetDropdown.setCurrentIndex(self.ui.sheetDropdown.count() - 1)
+
+        #auto save sheet to database
+        self.save_csv(self)
+
+        # except Exception as e:
+        #     QMessageBox.critical(self, "Error Loading CSV", str(e))  
     #----------------------------------------------------------
     def refresh_plots(self):     
         plotting.refresh(self)       

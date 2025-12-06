@@ -27,7 +27,7 @@ class Ui_OrionsApp(object):
     def setupUi(self, OrionsApp):
         if not OrionsApp.objectName():
             OrionsApp.setObjectName(u"OrionsApp")
-        OrionsApp.resize(1540, 799)
+        OrionsApp.resize(1540, 800)
         OrionsApp.setTabShape(QTabWidget.TabShape.Triangular)
         self.actionOpen = QAction(OrionsApp)
         self.actionOpen.setObjectName(u"actionOpen")
@@ -171,6 +171,7 @@ class Ui_OrionsApp(object):
         self.statusbar.setObjectName(u"statusbar")
         self.statusbar.setEnabled(True)
         self.statusbar.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
+        self.statusbar.setAutoFillBackground(False)
         OrionsApp.setStatusBar(self.statusbar)
 
         self.menubar.addAction(self.menuFile.menuAction())
@@ -181,7 +182,7 @@ class Ui_OrionsApp(object):
         self.retranslateUi(OrionsApp)
 
         self.tabWidget.setCurrentIndex(0)
-        self.tabWidget_2.setCurrentIndex(1)
+        self.tabWidget_2.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(OrionsApp)
