@@ -1,8 +1,10 @@
+#built in modules
 import sys
 import os
 from pathlib import Path
 import ctypes
 
+#GUI modules
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QFileDialog, QMessageBox,
     QStyledItemDelegate, QComboBox, QProgressBar, QGraphicsOpacityEffect,
@@ -19,11 +21,14 @@ from mainwindow import Ui_OrionsApp
 import PySide6
 import pyqtgraph as pg
 
-import plotting
-
+#other modules
 import pandas as pd
 import numpy as np
 import ollama
+
+#external fcns
+import plotting
+import utils
 
 #COMPILATION CMD:
 # pyside6-uic mainwindow.ui -o mainwindow.py
@@ -59,6 +64,8 @@ class MainWindow(QMainWindow):
         self.ui = Ui_OrionsApp()
         self.ui.setupUi(self)        
 
+        #Startup tasks
+
         #Properties
         self.ps = Properties()
         try:
@@ -66,7 +73,9 @@ class MainWindow(QMainWindow):
         except:
             pass
 
-        #Startup tasks
+        plotting.init(self)
+
+        #Set initial component properties
         self.setWindowTitle(f"Finance Tracker {self.ps.APP_VERSION}")
 
         self.ui.tabWidget.setTabText(0, "Balance Sheet")
@@ -183,6 +192,9 @@ class MainWindow(QMainWindow):
     def save_month(self):
 
         self.ps.db[self.ps.year_sel][self.ps.month_sel]["notes"] = self.ui.textEdit.toPlainText() 
+
+        #calculate metrics
+        # utils.calc_metrics(self)
 
         #write out to file
         np.savez_compressed(os.path.join(self.ps.data_folder,"db.npz"), db=self.ps.db)

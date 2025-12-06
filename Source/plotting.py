@@ -1,19 +1,54 @@
 import numpy as np
 import pyqtgraph as pg
 
-def refresh(self):
-    # This is the widget you promoted in Designer!
-    # plot = self.ui.findChild(pg.PlotWidget, "PlotWidget")  # or whatever ObjectName you gave it
-    plot = self.ui.graphIE3         
-    # If you didn't set an objectName, use: plot = self.ui.your_placeholder_widget_name
+def init(self):
 
-    # Optional styling
-    # plot.setBackground('b')
+    plot = self.ui.graphBS1   
+          
+    plot.showGrid(x=True, y=True)
+    plot.setTitle("Balances vs. Time")
+    plot.setLabel('left', 'Amount (USD)')
+    plot.setLabel('bottom', 'Time')
+
+    plot = self.ui.graphBS2   
+          
+    plot.showGrid(x=True, y=True)
+    plot.setTitle("Totals vs. Time")
+    plot.setLabel('left', 'Amount (USD)')
+    plot.setLabel('bottom', 'Time')
+
+    plot = self.ui.graphBS3  
+          
+    plot.showGrid(x=True, y=True)
+    plot.setTitle("Asset Breakdown")
+    plot.setLabel('left', 'Amount (USD)')
+    plot.setLabel('bottom', 'Asset')
+
+    plot = self.ui.graphIE1   
+          
+    plot.showGrid(x=True, y=True)
+    plot.setTitle("Income and Expense vs. Time")
+    plot.setLabel('left', 'Amount (USD)')
+    plot.setLabel('bottom', 'Time')
+
+    plot = self.ui.graphIE2   
+          
+    plot.showGrid(x=True, y=True)
+    plot.setTitle("Totals vs. Time")
+    plot.setLabel('left', 'Amount (USD)')
+    plot.setLabel('bottom', 'Time')
+
+    plot = self.ui.graphIE3   
+
     plot.showGrid(x=True, y=True)
     plot.setTitle("Expense Breakdown")
     plot.setLabel('left', 'Amount (USD)')
     plot.setLabel('bottom', 'Category')
 
+def refresh(self):
+
+    plot = self.ui.graphIE3  
+    
     # Data
     months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']
     values = [120, 190, 150, 230, 210, 280]
