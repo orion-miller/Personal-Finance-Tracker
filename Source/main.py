@@ -19,6 +19,8 @@ from mainwindow import Ui_OrionsApp
 import PySide6
 import pyqtgraph as pg
 
+import plotting
+
 import pandas as pd
 import numpy as np
 import ollama
@@ -34,11 +36,13 @@ class Properties:
         # self.expense_types = ["-", "Bills", "Groceries","Takeout","Car","Travel","Other"]
         self.expense_types = ["Transfer", "Bills", "Groceries","Takeout","Car","Travel","Entertainment","Other"]
         self.db = {
-            "2025": {
-                "12": {
-                    "bs": {},
-                    "ie":  {},
-                    "notes": ""
+            "2025": { #year
+                "12": { #month
+                    "bs": {},      #balance sheet
+                    "bs_met": {},  #balance sheet metrics                    
+                    "ie":  {},     #income + expense
+                    "ie_met":  {}, #income + expense metrics                   
+                    "notes": ""    #general notes
                 }           
         }   
         }
@@ -111,7 +115,7 @@ class MainWindow(QMainWindow):
         self.ui.sheetLoad.clicked.connect(self.load_csv)
         self.ui.sheetSave.clicked.connect(self.save_csv)
         self.ui.sheetDelete.clicked.connect(self.delete_csv)        
-        self.ui.pushButton_refresh.clicked.connect(self.setup_bar_graph)    
+        self.ui.pushButton_refresh.clicked.connect(self.refresh_plots)    
         self.ui.pushButton_loadmonth.clicked.connect(self.load_month)            
         self.ui.pushButton_savemonth.clicked.connect(self.save_month)
         self.ui.tabWidget.currentChanged.connect(self.on_tab_changed)
@@ -119,6 +123,9 @@ class MainWindow(QMainWindow):
         self.ui.comboBox_month.currentIndexChanged.connect(self.month_changed)
         self.ui.comboBox_month_2.currentIndexChanged.connect(self.month_changed)    
         self.ui.comboBox_month_3.currentIndexChanged.connect(self.month_changed)
+        self.ui.comboBox_year.currentIndexChanged.connect(self.year_changed)
+        self.ui.comboBox_year_2.currentIndexChanged.connect(self.year_changed)      
+        self.ui.comboBox_year_3.currentIndexChanged.connect(self.year_changed)
     #----------------------------------------------------------
     def pick_folder(self):
         folder = QFileDialog.getExistingDirectory(
@@ -163,10 +170,12 @@ class MainWindow(QMainWindow):
        
         if self.ps.month_sel not in self.ps.db[self.ps.year_sel]:
             self.ps.db[self.ps.year_sel][self.ps.month_sel] = {
-                "bs": {},
-                "ie":  {},
-                "notes": ""  
-                }
+                "bs": {},      #balance sheet
+                "bs_met": {},  #balance sheet metrics                    
+                "ie":  {},     #income + expense
+                "ie_met":  {}, #income + expense metrics                   
+                "notes": ""    #general notes
+                }         
             
         #set ui elements with existing data
         self.ui.textEdit.setPlainText(self.ps.db[self.ps.year_sel][self.ps.month_sel]["notes"])    
@@ -183,6 +192,11 @@ class MainWindow(QMainWindow):
         msg.setText("Your changes have been saved")
         msg.exec()   
     #----------------------------------------------------------
+    def year_changed(self):
+        self.ps.year_sel = self.ui.comboBox_year.currentText()
+        self.ps.year_p1 = self.ui.comboBox_year_2.currentText()
+        self.ps.year_p2 = self.ui.comboBox_year_3.currentText()          
+    #----------------------------------------------------------
     def month_changed(self):
         self.ps.month_sel = str(self.ui.comboBox_month.currentIndex() + 1)
         self.ps.month_p1 = str(self.ui.comboBox_month_2.currentIndex() + 1)
@@ -196,13 +210,14 @@ class MainWindow(QMainWindow):
     #----------------------------------------------------------
     def delete_csv(self):
         #delete entry from database
-        self.ps.db[self.ps.year_sel][self.ps.month_sel]["ie"].pop(self.ui.sheetDropdown.currentText(), None)
+        if self.ui.sheetDropdown.count() > 0:
+            self.ps.db[self.ps.year_sel][self.ps.month_sel]["ie"].pop(self.ui.sheetDropdown.currentText(), None)
 
-        #clear table
-        self.ui.sheetTable.setModel(TableModel(pd.DataFrame()))
+            #clear table
+            self.ui.sheetTable.setModel(TableModel(pd.DataFrame()))
 
-        #remove entry from dropdown  
-        self.ui.sheetDropdown.removeItem(self.ui.sheetDropdown.currentIndex())   
+            #remove entry from dropdown  
+            self.ui.sheetDropdown.removeItem(self.ui.sheetDropdown.currentIndex())   
     #----------------------------------------------------------
     def load_csv(self):
         # File dialog with CSV filter
@@ -257,32 +272,8 @@ class MainWindow(QMainWindow):
         except Exception as e:
             QMessageBox.critical(self, "Error Loading CSV", str(e))  
     #----------------------------------------------------------
-    def setup_bar_graph(self):
-            # This is the widget you promoted in Designer!
-            # plot = self.ui.findChild(pg.PlotWidget, "PlotWidget")  # or whatever ObjectName you gave it
-            plot = self.ui.graphIE3         
-            # If you didn't set an objectName, use: plot = self.ui.your_placeholder_widget_name
-
-            # Optional styling
-            # plot.setBackground('b')
-            plot.showGrid(x=True, y=True)
-            plot.setTitle("Expense Breakdown", size='14pt')
-            plot.setLabel('left', 'Amount (USD)')
-            plot.setLabel('bottom', 'Category')
-
-            # Data
-            months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']
-            values = [120, 190, 150, 230, 210, 280]
-
-            x = np.arange(len(months))
-            bars = pg.BarGraphItem(x=x, height=values, width=0.6, brush='#0066cc', pen='k')
-            plot.addItem(bars)
-
-            # Custom x-axis labels
-            ax = plot.getAxis('bottom')
-            ax.setTicks([[(i, month) for i, month in enumerate(months)]])
-
-            plot.setXRange(-0.6, len(months) - 0.4) 
+    def refresh_plots(self):     
+        plotting.refresh(self)       
     #----------------------------------------------------------
     def show_temporary_message(self, text, duration=3000, fade_ms=600):
         """Show message for `duration` ms and then fade it out over `fade_ms` ms"""
