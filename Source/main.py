@@ -25,7 +25,6 @@ import pyqtgraph as pg
 import pandas as pd
 import numpy as np
 import ollama 
-import PyTaskbar
 
 #external fcns
 import plotting
@@ -302,7 +301,7 @@ class MainWindow(QMainWindow):
 
         self.ui.progress.setVisible(False)
         self.ui.status_label.setVisible(False) 
-        WinTB.set_state(tb, "flash")        
+        WinTB.set_state(tb, "normal")        
 
         # Show in table
         model = TableModel(df)
