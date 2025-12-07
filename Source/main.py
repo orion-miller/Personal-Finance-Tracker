@@ -24,13 +24,14 @@ import pyqtgraph as pg
 #other modules
 import pandas as pd
 import numpy as np
-import ollama
+import ollama 
+import PyTaskbar
 
 #external fcns
 import plotting
 import utils
 import status
-from taskbar_progress import TaskbarProgress
+from win_tb import WinTB
 
 #COMPILATION CMD:
 # pyside6-uic mainwindow.ui -o mainwindow.py
@@ -40,7 +41,6 @@ class Properties:
         self.APP_VERSION = "1.0"
         self.data_folder = "D:\\!Orion_Documents\\Financial\\!OM_Finance_Tracker" # None
         self.income_types = ["-", "Job", "Investment", "Other"]
-        # self.expense_types = ["-", "Bills", "Groceries","Takeout","Car","Travel","Other"]
         self.expense_types = ["Transfer", "Bills", "Groceries","Takeout","Car","Travel","Entertainment","Other"]
         self.db = {
             "2025": { #year
@@ -240,6 +240,8 @@ class MainWindow(QMainWindow):
     def save_csv(self):
         self.ps.db[self.ps.year_sel][self.ps.month_sel]["ie"][self.ui.sheetDropdown.currentText()] = self.ui.sheetTable.model()._df.copy()
 
+        # self.setCentralWidget(self.ui.graphBS1)
+
         self.statusBar().showMessage("Saved sheet", 5000) 
         # self.show_temporary_message("Sheet saved", 2500)  
     #----------------------------------------------------------
@@ -276,13 +278,17 @@ class MainWindow(QMainWindow):
 
         self.ui.progress.setVisible(True) 
         self.ui.status_label.setVisible(True)
-        # TaskbarProgress.clear(self)
+
+        wid = self.winId()
+        tb = WinTB(wid)              
+        WinTB.set_state(tb, "normal")
         
         for i in range(len(df)):
             prog_value = int(100*(i+1)/len(df))
             self.ui.progress.setValue(prog_value)
             self.ui.status_label.setText("Processing expenses")  
-            # TaskbarProgress.set(self, prog_value)   # ← THIS syncs to taskbar!
+            WinTB.set_val(tb, prog_value) 
+            # progress.set_progress(prog_value)
 
             # assign initial categorizations of items using ollama
             response = ollama.chat(model='gemma3:4b', messages=[{
@@ -296,7 +302,7 @@ class MainWindow(QMainWindow):
 
         self.ui.progress.setVisible(False)
         self.ui.status_label.setVisible(False) 
-        # TaskbarProgress.set(self, 100)   # or TaskbarProgress.error(self)           
+        WinTB.set_state(tb, "flash")        
 
         # Show in table
         model = TableModel(df)
@@ -313,7 +319,7 @@ class MainWindow(QMainWindow):
         self.ui.sheetDropdown.setCurrentIndex(self.ui.sheetDropdown.count() - 1)
 
         #auto save sheet to database
-        self.save_csv(self)
+        self.save_csv()
 
         # except Exception as e:
         #     QMessageBox.critical(self, "Error Loading CSV", str(e))  
@@ -403,19 +409,22 @@ class ComboBoxDelegate(QStyledItemDelegate):
         editor.setGeometry(option.rect)
 
 if __name__ == "__main__":
+    app = QApplication(sys.argv)
+
+    #set app properties
+    #allow app icon to show properly on windows taskbar
     if sys.platform.startswith("win"):
-        myappid = "finance.tracker"  # Change to something unique for your app
+        myappid = "finance.tracker"  #arbitrary name
     try:
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
     except AttributeError:
-        pass  # Fails gracefully on non-Windows
+        pass      
 
-    app = QApplication(sys.argv)
-    app.setWindowIcon(QIcon("finance_mode_24dp_75FB4C_FILL0_wght400_GRAD0_opsz24.ico"))  # or "icon.ico" on Windows
+    app.setWindowIcon(QIcon("finance_mode_24dp_75FB4C_FILL0_wght400_GRAD0_opsz24.ico"))
     # app.setStyle("Fusion")
 
     window = MainWindow()
     window.setFixedSize(1540, 800)
-    window.setWindowIcon(QIcon("finance_mode_24dp_75FB4C_FILL0_wght400_GRAD0_opsz24.ico"))  # optional: also set per window
+    # window.setWindowIcon(QIcon("finance_mode_24dp_75FB4C_FILL0_wght400_GRAD0_opsz24.ico"))  # optional: also set per window
     window.show()
     sys.exit(app.exec())
