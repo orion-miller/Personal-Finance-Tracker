@@ -47,6 +47,9 @@ def init(self):
     plot.setLabel('bottom', 'Category')
 
 def refresh(self):
+    #refresh all plots with current data
+
+    #get time range
 
     plot = self.ui.graphIE3  
     plot.clear()

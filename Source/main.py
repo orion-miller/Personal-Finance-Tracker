@@ -165,12 +165,13 @@ class MainWindow(QMainWindow):
     def pick_folder(self):
         folder = QFileDialog.getExistingDirectory(
             parent=self,                                   # your MainWindow or widget
-            caption="Choose a folder"                    # title bar text
+            caption="Choose a folder",                     # title bar text
+            dir=self.ps.data_folder                                      
         )
 
         if folder:                                         # user clicked OK (not Cancel)
             self.ps.data_folder = folder 
-            self.statusBar().showMessage(f"Set Workspace Directory: {folder}", 5000)          
+            self.show_fading_message(f"Workspace directory set: {folder}")                           
     #----------------------------------------------------------
     def show_info(self):
         QMessageBox.information(
@@ -227,9 +228,11 @@ class MainWindow(QMainWindow):
             if "Type" in df.columns:
                 col_idx = df.columns.get_loc("Type")
                 delegate = ComboBoxDelegate(self.ps.expense_types, self.ui.sheetTable)
-                self.ui.sheetTable.setItemDelegateForColumn(col_idx, delegate)     
+                self.ui.sheetTable.setItemDelegateForColumn(col_idx, delegate)    
 
-            # Add sheet to dropdown
+            #clear dropdown
+            self.ui.sheetDropdown.clear()
+            # Add sheet(s) to dropdown
             self.ui.sheetDropdown.addItems(self.ps.db[self.ps.year_sel][self.ps.month_sel]["ie"].keys())
             self.ui.sheetDropdown.setCurrentIndex(0)
         else:
@@ -239,6 +242,8 @@ class MainWindow(QMainWindow):
             self.ui.sheetTable.setModel(TableModel(pd.DataFrame()))
             #clear dropdown
             self.ui.sheetDropdown.clear()
+
+        self.show_fading_message(f"{self.ps.month_sel} {self.ps.year_sel} data loaded")             
 
     #----------------------------------------------------------
     def save_month(self):
@@ -251,10 +256,12 @@ class MainWindow(QMainWindow):
         #write out to file
         np.savez_compressed(os.path.join(self.ps.data_folder,"db.npz"), db=self.ps.db)
 
-        msg = QMessageBox(QMessageBox.NoIcon, "Month Saved Successfully", "")
-        msg.setIcon(QMessageBox.Information)
-        msg.setText("Your changes have been saved")
-        msg.exec()   
+        self.show_fading_message(f"{self.ps.month_sel} {self.ps.year_sel} data saved")  
+
+        # msg = QMessageBox(QMessageBox.NoIcon, "Month Saved Successfully", "")
+        # msg.setIcon(QMessageBox.Information)
+        # msg.setText("Your changes have been saved")
+        # msg.exec()   
     #----------------------------------------------------------
     def year_changed(self):
         self.ps.year_sel = self.ui.comboBox_year.currentText()
@@ -271,22 +278,27 @@ class MainWindow(QMainWindow):
         self.ui.sheetTable.setModel(TableModel(sheet))                                 
     #----------------------------------------------------------
     def save_csv(self):
-        self.ps.db[self.ps.year_sel][self.ps.month_sel]["ie"][self.ui.sheetDropdown.currentText()] = self.ui.sheetTable.model()._df.copy()
+        if self.ui.sheetDropdown.count() > 0:
+            sheet_name = self.ui.sheetDropdown.currentText()        
+            self.ps.db[self.ps.year_sel][self.ps.month_sel]["ie"][sheet_name] = self.ui.sheetTable.model()._df.copy()
 
-        # self.setCentralWidget(self.ui.graphBS1)
+            # self.setCentralWidget(self.ui.graphBS1)
 
-        self.show_temporary_message("Sheet saved")  
+            self.show_fading_message("Sheet saved: {sheet_name}")  
     #----------------------------------------------------------
     def delete_csv(self):
         #delete entry from database
         if self.ui.sheetDropdown.count() > 0:
-            self.ps.db[self.ps.year_sel][self.ps.month_sel]["ie"].pop(self.ui.sheetDropdown.currentText(), None)
+            sheet_name = self.ui.sheetDropdown.currentText()
+            self.ps.db[self.ps.year_sel][self.ps.month_sel]["ie"].pop(sheet_name, None)
 
             #clear table
             self.ui.sheetTable.setModel(TableModel(pd.DataFrame()))
 
             #remove entry from dropdown  
-            self.ui.sheetDropdown.removeItem(self.ui.sheetDropdown.currentIndex())   
+            self.ui.sheetDropdown.removeItem(self.ui.sheetDropdown.currentIndex())  
+
+            self.show_fading_message("Sheet deleted: {sheet_name}")               
     #----------------------------------------------------------
     def load_csv(self):
         # File dialog with CSV filter
@@ -361,8 +373,7 @@ class MainWindow(QMainWindow):
     def refresh_plots(self):     
         plotting.refresh(self)      
 
-        # self.statusBar().showMessage("Here is a test", 5000) 
-        self.show_fading_message("Here is a fading test", 4000)           
+        self.show_fading_message("Plots refreshed")           
     #----------------------------------------------------------
     def show_fading_message(self, text, duration=4000):
         """Show message and then fade it out"""
@@ -472,11 +483,11 @@ if __name__ == "__main__":
     except AttributeError:
         pass      
 
-    app.setWindowIcon(QIcon("finance_mode_24dp_75FB4C_FILL0_wght400_GRAD0_opsz24.ico"))
+    app.setWindowIcon(QIcon("assets/finance_mode_24dp_75FB4C_FILL0_wght400_GRAD0_opsz24.ico"))
     # app.setStyle("Fusion")
 
     window = MainWindow()
     window.setFixedSize(1540, 800)
-    # window.setWindowIcon(QIcon("finance_mode_24dp_75FB4C_FILL0_wght400_GRAD0_opsz24.ico"))  # optional: also set per window
+    # window.setWindowIcon(QIcon("assets/finance_mode_24dp_75FB4C_FILL0_wght400_GRAD0_opsz24.ico"))  # optional: also set per window
     window.show()
     sys.exit(app.exec())
