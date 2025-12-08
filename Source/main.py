@@ -109,32 +109,6 @@ class MainWindow(QMainWindow):
             QStatusBar { border: none; }
         """)
 
-        # Create progress bar, add it to the status bar
-        self.ui.progress = QProgressBar()
-        self.ui.progress.setMaximumWidth(75)  
-        self.ui.progress.setAlignment(Qt.AlignCenter)    
-        self.ui.progress.setTextVisible(True)   
-        self.ui.progress.setRange(0, 100)
-        # self.ui.progress.setStyleSheet("QProgressBar { border: none; background: transparent; }")          
-        self.ui.progress.setVisible(False) # hide until needed 
-        # self.ui.statusbar().addPermanentWidget(self.ui.progress)      
-        self.statusBar().addPermanentWidget(self.ui.progress)  
-
-        # Create a permanent label inside the status bar (invisible at first)
-        self.ui.status_label = QLabel("")
-        # self.ui.status_label.setStyleSheet("color: white; background: rgba(0,0,0,180); padding: 4px 10px; border-radius: 4px;")
-        self.ui.status_label.setMinimumWidth(400)
-        # self.ui.status_label.setStyleSheet("QLabel { border: none; background: transparent; }")
-        self.ui.status_label.setVisible(False) # hide until needed    
-        self.statusBar().addPermanentWidget(self.ui.status_label)
-        # self.ui.statusbar().addPermanentWidget(self.status_label)        
-        # self.ui.status_label.hide()        
-
-        self.ui.status_spacer = QWidget()
-        # self.ui.status_spacer.setStyleSheet("background: transparent;")
-        self.statusBar().addPermanentWidget(self.ui.status_spacer, stretch=1) 
-        # self.statusBar().insertPermanentWidget(2, QWidget(), 1)   # index 2 = after the two widgets
-
         #Connections
         self.ui.actionOpen.triggered.connect(self.pick_folder)
         self.ui.actionAbout.triggered.connect(self.show_info)
@@ -153,6 +127,38 @@ class MainWindow(QMainWindow):
         self.ui.comboBox_year.currentIndexChanged.connect(self.year_changed)
         self.ui.comboBox_year_2.currentIndexChanged.connect(self.year_changed)      
         self.ui.comboBox_year_3.currentIndexChanged.connect(self.year_changed)
+    #----------------------------------------------------------
+    def config_status_prog(self, action: str):
+        #configures status bar to show progress bar and message
+
+        if action == 'construct':
+            # Create progress bar, add it to the status bar
+            self.ui.progress = QProgressBar()
+            self.ui.progress.setMaximumWidth(75)  
+            self.ui.progress.setAlignment(Qt.AlignCenter)    
+            self.ui.progress.setRange(0, 100)         
+            self.ui.statusbar.addWidget(self.ui.progress)  
+
+            # Create a permanent label inside the status bar (invisible at first)
+            self.ui.status_label = QLabel("")
+            self.ui.status_label.setMinimumWidth(400)   
+            self.ui.statusbar.addWidget(self.ui.status_label)                   
+
+            #extra spacer to push prior items to left
+            self.ui.status_spacer = QWidget()    
+            self.ui.statusbar.addWidget(self.ui.status_spacer, stretch=1) 
+
+        elif action == 'destruct':
+            # Remove progress bar and label from status bar
+            self.ui.statusbar.removeWidget(self.ui.progress)
+            self.ui.statusbar.removeWidget(self.ui.status_label)
+            self.ui.statusbar.removeWidget(self.ui.status_spacer)
+
+            # Delete references
+            # del self.ui.progress
+            # del self.ui.status_label
+            # del self.ui.status_spacer
+
     #----------------------------------------------------------
     def pick_folder(self):
         folder = QFileDialog.getExistingDirectory(
@@ -241,7 +247,7 @@ class MainWindow(QMainWindow):
 
         # self.setCentralWidget(self.ui.graphBS1)
 
-        self.statusBar().showMessage("Saved sheet", 5000) 
+        # self.statusBar().showMessage("Saved sheet", 5000) 
         # self.show_temporary_message("Sheet saved", 2500)  
     #----------------------------------------------------------
     def delete_csv(self):
@@ -275,11 +281,8 @@ class MainWindow(QMainWindow):
         df.drop(df.columns[[2,3]], axis=1, inplace=True)
         df.insert(2, "Type", "-")
 
-        self.ui.progress.setVisible(True) 
-        self.ui.status_label.setVisible(True)
-
-        wid = self.winId()
-        tb = WinTB(wid)              
+        self.config_status_prog('construct') #create progress elements in status bar
+        tb = WinTB(self.winId())              
         WinTB.set_state(tb, "normal")
         
         for i in range(len(df)):
@@ -287,7 +290,6 @@ class MainWindow(QMainWindow):
             self.ui.progress.setValue(prog_value)
             self.ui.status_label.setText("Processing expenses")  
             WinTB.set_val(tb, prog_value) 
-            # progress.set_progress(prog_value)
 
             # assign initial categorizations of items using ollama
             response = ollama.chat(model='gemma3:4b', messages=[{
@@ -299,8 +301,7 @@ class MainWindow(QMainWindow):
             if response_isolated in self.ps.expense_types:
                 df['Type'].loc[i] = response_isolated                                   
 
-        self.ui.progress.setVisible(False)
-        self.ui.status_label.setVisible(False) 
+        self.config_status_prog('destruct') #remove progress elements in status bar
         WinTB.set_state(tb, "normal")        
 
         # Show in table
@@ -324,36 +325,54 @@ class MainWindow(QMainWindow):
         #     QMessageBox.critical(self, "Error Loading CSV", str(e))  
     #----------------------------------------------------------
     def refresh_plots(self):     
-        plotting.refresh(self)       
+        plotting.refresh(self)      
+
+        # self.statusBar().showMessage("Here is a test", 5000) 
+        self.show_fading_message("Here is a fading test", 4000)           
     #----------------------------------------------------------
-    def show_temporary_message(self, text, duration=3000, fade_ms=600):
-        """Show message for `duration` ms and then fade it out over `fade_ms` ms"""
-        self.status_label.setText(text)
-        self.status_label.adjustSize()
-        self.status_label.show()
+    def show_fading_message(self, text, duration=4000):
+        """Show message and then fade it out"""
 
         # Cancel any running animation first
         if hasattr(self, "_fade_anim"):
             self._fade_anim.stop()
+            self.clear_fading_components()
+
+        #Create components
+        # Create a label inside the status bar
+        self.ui.status_label = QLabel("")
+        self.ui.status_label.setMinimumWidth(400)   
+        self.ui.statusbar.addWidget(self.ui.status_label)                   
+
+        #extra spacer to push prior items to left
+        self.ui.status_spacer = QWidget()    
+        self.ui.statusbar.addWidget(self.ui.status_spacer, stretch=1)             
 
         # Fade in instantly, stay, then fade out
-        self.status_label.setGraphicsEffect(None)
-        opacity = QGraphicsOpacityEffect(self.status_label)
-        self.status_label.setGraphicsEffect(opacity)
+        self.effect = QGraphicsOpacityEffect()     
+        self.ui.status_label.setGraphicsEffect(self.effect)
 
-        self._fade_anim = QPropertyAnimation(opacity, b"opacity")
-        self._fade_anim.setDuration(duration + fade_ms)
-        self._fade_anim.setEasingCurve(QEasingCurve.Linear)
+        self._fade_anim = QPropertyAnimation(self.ui.status_label.graphicsEffect(), b"opacity")
+        self._fade_anim.setDuration(duration)
+        self._fade_anim.setEasingCurve(QEasingCurve.InCubic)        
+        self._fade_anim.setStartValue(1)          
+        self._fade_anim.setEndValue(0)        
 
-        # 1.0 → 1.0 (stay) → 0.0 (fade out)
-        self._fade_anim.setKeyValues([(0, 1.0),
-                                      (duration, 1.0),
-                                      (duration + fade_ms, 0.0)])
+        #Create fading text
+        self.ui.status_label.setText(text)        
+        self._fade_anim.start()    
 
-        self._fade_anim.finished.connect(self.status_label.hide)
-        self._fade_anim.start()            
+        self._fade_anim.finished.connect(lambda: self.clear_fading_components())
 
-    
+    def clear_fading_components(self):
+        # Remove progress bar and label from status bar
+        self.ui.statusbar.removeWidget(self.ui.status_label)
+        self.ui.statusbar.removeWidget(self.ui.status_spacer)
+
+        # Delete references
+        # del self.ui.status_label
+        # del self.ui.status_spacer
+
 class TableModel(QAbstractTableModel):
     def __init__(self, df=pd.DataFrame()):
         super().__init__()
