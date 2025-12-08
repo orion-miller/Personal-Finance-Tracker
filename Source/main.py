@@ -39,8 +39,9 @@ class Properties:
     def __init__(self):
         self.APP_VERSION = "1.0"
         self.data_folder = "D:\\!Orion_Documents\\Financial\\!OM_Finance_Tracker" # None
-        self.income_types = ["Job", "Investment", "Other"]
+        self.income_types = ["Work", "Investment", "Sales", "Rewards"]
         self.expense_types = ["Transfer", "Bills", "Groceries","Takeout","Car","Travel","Entertainment","Other"]
+        self.income_expense_types = self.income_types + self.expense_types       
         self.db = {
             "2025": { #year
                 "12": { #month
@@ -211,9 +212,34 @@ class MainWindow(QMainWindow):
                 "ie_cat": {},  #income + expense categories                  
                 "notes": ""    #general notes
                 }         
-            
-        #set ui elements with existing data
-        self.ui.textEdit.setPlainText(self.ps.db[self.ps.year_sel][self.ps.month_sel]["notes"])    
+                   
+        if len(self.ps.db[self.ps.year_sel][self.ps.month_sel]["ie"]) > 0:
+            #set ui elements with existing data
+            self.ui.textEdit.setPlainText(self.ps.db[self.ps.year_sel][self.ps.month_sel]["notes"])  
+
+            # Show ie table
+            first_key = list(self.ps.db[self.ps.year_sel][self.ps.month_sel]["ie"].keys())[0]
+            df = self.ps.db[self.ps.year_sel][self.ps.month_sel]["ie"][first_key]
+            model = TableModel(df)
+            self.ui.sheetTable.setModel(model)
+            self.ui.sheetTable.resizeColumnsToContents()
+
+            if "Type" in df.columns:
+                col_idx = df.columns.get_loc("Type")
+                delegate = ComboBoxDelegate(self.ps.expense_types, self.ui.sheetTable)
+                self.ui.sheetTable.setItemDelegateForColumn(col_idx, delegate)     
+
+            # Add sheet to dropdown
+            self.ui.sheetDropdown.addItems(self.ps.db[self.ps.year_sel][self.ps.month_sel]["ie"].keys())
+            self.ui.sheetDropdown.setCurrentIndex(0)
+        else:
+            #clear notes
+            self.ui.textEdit.setPlainText("")
+            #clear table
+            self.ui.sheetTable.setModel(TableModel(pd.DataFrame()))
+            #clear dropdown
+            self.ui.sheetDropdown.clear()
+
     #----------------------------------------------------------
     def save_month(self):
 
@@ -249,8 +275,7 @@ class MainWindow(QMainWindow):
 
         # self.setCentralWidget(self.ui.graphBS1)
 
-        # self.statusBar().showMessage("Saved sheet", 5000) 
-        # self.show_temporary_message("Sheet saved", 2500)  
+        self.show_temporary_message("Sheet saved")  
     #----------------------------------------------------------
     def delete_csv(self):
         #delete entry from database
@@ -294,10 +319,17 @@ class MainWindow(QMainWindow):
             WinTB.set_val(tb, prog_value) 
 
             # assign initial categorizations of items using ollama
-            response = ollama.chat(model='gemma3:4b', messages=[{
-                'role': 'user',
-                'content': f"Return only one category from this list that best matches the expense. Return only the category itself. List: {', '.join(self.ps.expense_types)}\n\nDescription: {df['Description'][i]}\n\nCategory:"
-            }])
+            if df['Amount'][i] > 0:
+                response = ollama.chat(model='gemma3:4b', messages=[{
+                    'role': 'user',
+                    'content': f"Return only one category from this list that best matches the expense. Return only the category itself. List: {', '.join(self.ps.income_types)}\n\nDescription: {df['Description'][i]}\n\nCategory:"
+                }])
+            else:
+                response = ollama.chat(model='gemma3:4b', messages=[{
+                    'role': 'user',
+                    'content': f"Return only one category from this list that best matches the expense. Return only the category itself. List: {', '.join(self.ps.expense_types)}\n\nDescription: {df['Description'][i]}\n\nCategory:"
+                }])
+
             response_isolated = response['message']['content'].strip() 
 
             if response_isolated in self.ps.expense_types:
@@ -313,7 +345,7 @@ class MainWindow(QMainWindow):
 
         if "Type" in df.columns:
             col_idx = df.columns.get_loc("Type")
-            delegate = ComboBoxDelegate(self.ps.expense_types, self.ui.sheetTable)
+            delegate = ComboBoxDelegate(self.ps.income_expense_types, self.ui.sheetTable)
             self.ui.sheetTable.setItemDelegateForColumn(col_idx, delegate)     
 
         # Add sheet to dropdown

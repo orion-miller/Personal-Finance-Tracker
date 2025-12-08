@@ -199,7 +199,7 @@ class Ui_OrionsApp(object):
 #endif // QT_CONFIG(tooltip)
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QCoreApplication.translate("OrionsApp", u"Tab 1", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QCoreApplication.translate("OrionsApp", u"Tab 2", None))
-        self.pushButton_addcol.setText(QCoreApplication.translate("OrionsApp", u"Add Col.", None))
+        self.pushButton_addcol.setText(QCoreApplication.translate("OrionsApp", u"Add Row", None))
         self.pushButton_saveBS.setText(QCoreApplication.translate("OrionsApp", u"Save", None))
         self.tabWidget_2.setTabText(self.tabWidget_2.indexOf(self.tab_3), QCoreApplication.translate("OrionsApp", u"Tab 1", None))
         self.sheetLoad.setText(QCoreApplication.translate("OrionsApp", u"Load", None))

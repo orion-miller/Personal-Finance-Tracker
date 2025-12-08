@@ -2,6 +2,7 @@ import numpy as np
 import pyqtgraph as pg
 
 def init(self):
+    #set up plot format
 
     plot = self.ui.graphBS1   
           
@@ -48,14 +49,11 @@ def init(self):
 def refresh(self):
 
     plot = self.ui.graphIE3  
-
-    dtable = self.ps.db[self.ps.year_sel][self.ps.month_sel]["ie_cat"]
-    # matching_keys = [key for key in my_dict if 'user' in key]
-    # dtable = 
+    plot.clear()
 
     # Data
+    dtable = self.ps.db[self.ps.year_sel][self.ps.month_sel]["ie_cat"]
     cats = dtable.keys()
-    # values = [120, 190, 150, 230, 210, 280]
 
     x = np.arange(len(cats))
     bars = pg.BarGraphItem(x=x, height=list(dtable.values()), width=0.6, brush='#0066cc', pen='k')
@@ -64,5 +62,6 @@ def refresh(self):
     # Custom x-axis labels
     ax = plot.getAxis('bottom')
     ax.setTicks([[(i, cat) for i, cat in enumerate(cats)]])
+    # ax.setTickLabelRotation(90)
 
     plot.setXRange(-0.6, len(cats) - 0.4) 

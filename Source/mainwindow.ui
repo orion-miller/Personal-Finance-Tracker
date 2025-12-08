@@ -152,7 +152,7 @@
        </rect>
       </property>
       <property name="text">
-       <string>Add Col.</string>
+       <string>Add Row</string>
       </property>
      </widget>
      <widget class="QPushButton" name="pushButton_saveBS">
