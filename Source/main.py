@@ -39,7 +39,7 @@ class Properties:
     def __init__(self):
         self.APP_VERSION = "1.0"
         self.data_folder = "D:\\!Orion_Documents\\Financial\\!OM_Finance_Tracker" # None
-        self.income_types = ["-", "Job", "Investment", "Other"]
+        self.income_types = ["Job", "Investment", "Other"]
         self.expense_types = ["Transfer", "Bills", "Groceries","Takeout","Car","Travel","Entertainment","Other"]
         self.db = {
             "2025": { #year
@@ -47,7 +47,8 @@ class Properties:
                     "bs": {},      #balance sheet
                     "bs_met": {},  #balance sheet metrics                    
                     "ie": {},      #income + expense
-                    "ie_met": {},  #income + expense metrics                   
+                    "ie_met": {},  #income + expense metrics   
+                    "ie_cat": {},  #income + expense categories                                      
                     "notes": ""    #general notes
                 }           
         }   
@@ -206,7 +207,8 @@ class MainWindow(QMainWindow):
                 "bs": {},      #balance sheet
                 "bs_met": {},  #balance sheet metrics                    
                 "ie": {},      #income + expense
-                "ie_met": {},  #income + expense metrics                   
+                "ie_met": {},  #income + expense metrics 
+                "ie_cat": {},  #income + expense categories                  
                 "notes": ""    #general notes
                 }         
             
@@ -218,7 +220,7 @@ class MainWindow(QMainWindow):
         self.ps.db[self.ps.year_sel][self.ps.month_sel]["notes"] = self.ui.textEdit.toPlainText() 
 
         #calculate metrics
-        # utils.calc_metrics(self)
+        utils.calc_metrics(self)
 
         #write out to file
         np.savez_compressed(os.path.join(self.ps.data_folder,"db.npz"), db=self.ps.db)
