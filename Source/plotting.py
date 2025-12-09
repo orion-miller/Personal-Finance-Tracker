@@ -51,6 +51,26 @@ def refresh(self):
 
     #get time range
 
+    plot = self.ui.graphBS3  
+    plot.clear()
+
+    # Data
+    dtable = self.ps.db[self.ps.year_sel][self.ps.month_sel]["bs"]
+    cats = list(dtable['Item'])
+
+    x = np.arange(len(cats))
+    bars = pg.BarGraphItem(x=x, height=list(dtable['Amount']), width=0.6, brush='#0066cc', pen='k')
+    plot.addItem(bars)
+
+    # Custom x-axis labels
+    ax = plot.getAxis('bottom')
+    ax.setTicks([[(i, cat) for i, cat in enumerate(cats)]])
+    # ax.setTickLabelRotation(90)
+
+    plot.setXRange(-0.6, len(cats) - 0.4) 
+
+
+
     plot = self.ui.graphIE3  
     plot.clear()
 

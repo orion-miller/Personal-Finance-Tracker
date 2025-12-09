@@ -8,7 +8,7 @@ import ctypes
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QFileDialog, QMessageBox,
     QStyledItemDelegate, QComboBox, QProgressBar, QGraphicsOpacityEffect,
-    QStatusBar, QLabel
+    QStatusBar, QLabel, QHeaderView
 )
 from PySide6.QtUiTools import QUiLoader   # ← not needed anymore
 # from PySide6 import QtUiTools
@@ -41,11 +41,14 @@ class Properties:
         self.data_folder = "D:\\!Orion_Documents\\Financial\\!OM_Finance_Tracker" # None
         self.income_types = ["Work", "Investment", "Sales", "Rewards"]
         self.expense_types = ["Transfer", "Bills", "Groceries","Takeout","Car","Travel","Entertainment","Other"]
-        self.income_expense_types = self.income_types + self.expense_types       
+        self.income_expense_types = self.income_types + self.expense_types   
+        self.bs_format = pd.DataFrame({
+            "Item":   ["New"],
+            "Amount": [0.00]})              
         self.db = {
             "2025": { #year
                 "12": { #month
-                    "bs": {},      #balance sheet
+                    "bs": self.bs_format,      #balance sheet
                     "bs_met": {},  #balance sheet metrics                    
                     "ie": {},      #income + expense
                     "ie_met": {},  #income + expense metrics   
@@ -59,7 +62,7 @@ class Properties:
         self.year_p1 = "2024"
         self.month_p1 = "12"
         self.year_p2 = "2025"
-        self.month_p2 = "12"
+        self.month_p2 = "12"    
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -90,7 +93,7 @@ class MainWindow(QMainWindow):
 
         self.ui.comboBox_year.addItems(["2020", "2021", "2022", "2023", "2024", "2025"])        
         self.ui.comboBox_month.addItems(["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"])
-        # self.ui.comboBox_month.setItemData(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)        
+        # self.ui.comboBox_month.setItemData([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])        
         self.ui.comboBox_year.setCurrentText("2025")
         self.ui.comboBox_month.setCurrentText("Dec")
         self.ui.comboBox_year_2.addItems(["2020", "2021", "2022", "2023", "2024", "2025"])        
@@ -102,9 +105,12 @@ class MainWindow(QMainWindow):
         self.ui.comboBox_month_3.addItems(["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"])
         # self.ui.comboBox_month_3.setItemData(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)          
         self.ui.comboBox_year_3.setCurrentText("2025")
-        self.ui.comboBox_month_3.setCurrentText("Dec")                
-        # self.ui.statusbar.sizeGripEnabled = False
-        # self.statusBar.sizeGripEnabled = False
+        self.ui.comboBox_month_3.setCurrentText("Dec")   
+
+        self.ui.tableBS.setAlternatingRowColors(True)
+        self.ui.sheetTable.setAlternatingRowColors(True)
+        self.ui.tableBS.setShowGrid(False)        
+        self.ui.sheetTable.setShowGrid(False)     
 
         self.statusBar().setStyleSheet("""
             QStatusBar::item { border: none; }
@@ -129,6 +135,8 @@ class MainWindow(QMainWindow):
         self.ui.comboBox_year.currentIndexChanged.connect(self.year_changed)
         self.ui.comboBox_year_2.currentIndexChanged.connect(self.year_changed)      
         self.ui.comboBox_year_3.currentIndexChanged.connect(self.year_changed)
+        self.ui.pushButton_add_row.clicked.connect(self.add_bs_row)
+        self.ui.pushButton_saveBS.clicked.connect(self.save_bs_month)
     #----------------------------------------------------------
     def config_status_prog(self, action: str):
         #configures status bar to show progress bar and message
@@ -196,7 +204,38 @@ class MainWindow(QMainWindow):
             case "Balance Sheet":
                 self.ui.tabWidget.setCurrentIndex(0)
             case "Income + Expense":        
-                self.ui.tabWidget.setCurrentIndex(1)            
+                self.ui.tabWidget.setCurrentIndex(1)      
+    #----------------------------------------------------------
+    def add_bs_row(self):  
+        #add row to balance sheet table
+        try:
+            self.ps.db[self.ps.year_sel][self.ps.month_sel]["bs"] = pd.concat(
+                [self.ui.tableBS.model()._df,
+                self.ps.bs_format],
+                ignore_index=True
+            )     
+
+            # Show bs table - duplicated in load month below
+            df = self.ps.db[self.ps.year_sel][self.ps.month_sel]["bs"]
+            model = TableModel(df)
+            self.ui.tableBS.setModel(model)
+            self.ui.tableBS.resizeColumnsToContents()   
+
+            # Set column widths
+            BSheader = self.ui.tableBS.horizontalHeader()
+            BSheader.setSectionResizeMode(0, QHeaderView.Stretch)  #"item" column stretches 
+            self.ui.tableBS.setColumnWidth(1, 140)                 #fixed width      
+
+            self.show_fading_message("Balance sheet row added") 
+        except:
+            self.show_fading_message("Error adding balance sheet row - ensure to load a month first")
+    #----------------------------------------------------------
+    def save_bs_month(self):  
+        #save bs table data for month
+       
+        self.ps.db[self.ps.year_sel][self.ps.month_sel]["bs"] = self.ui.tableBS.model()._df.copy()
+
+        self.show_fading_message("Balance sheet table saved")     
     #----------------------------------------------------------
     def load_month(self):
 
@@ -205,19 +244,40 @@ class MainWindow(QMainWindow):
             self.ps.db[self.ps.year_sel] = {}
        
         if self.ps.month_sel not in self.ps.db[self.ps.year_sel]:
+            df = pd.DataFrame({
+                "Item":   ["New"],
+                "Amount": [0.00]})
+
             self.ps.db[self.ps.year_sel][self.ps.month_sel] = {
                 "bs": {},      #balance sheet
-                "bs_met": {},  #balance sheet metrics                    
+                "bs_met": df,  #balance sheet metrics                    
                 "ie": {},      #income + expense
                 "ie_met": {},  #income + expense metrics 
                 "ie_cat": {},  #income + expense categories                  
                 "notes": ""    #general notes
                 }         
-                   
+
+        #balance sheet setup
+        if len(self.ps.db[self.ps.year_sel][self.ps.month_sel]["bs"]) > 0:
+            # Show bs table
+            df = self.ps.db[self.ps.year_sel][self.ps.month_sel]["bs"]
+            model = TableModel(df)
+            self.ui.tableBS.setModel(model)
+            self.ui.tableBS.resizeColumnsToContents()   
+
+            # Set column widths
+            BSheader = self.ui.tableBS.horizontalHeader()
+            BSheader.setSectionResizeMode(0, QHeaderView.Stretch)  #"item" column stretches 
+            self.ui.tableBS.setColumnWidth(1, 140)                 #fixed width         
+        else:
+            #clear table
+            self.ui.tableBS.setModel(TableModel(pd.DataFrame()))
+
+        #income + expense setup
         if len(self.ps.db[self.ps.year_sel][self.ps.month_sel]["ie"]) > 0:
             #set ui elements with existing data
             self.ui.textEdit.setPlainText(self.ps.db[self.ps.year_sel][self.ps.month_sel]["notes"])  
-
+         
             # Show ie table
             first_key = list(self.ps.db[self.ps.year_sel][self.ps.month_sel]["ie"].keys())[0]
             df = self.ps.db[self.ps.year_sel][self.ps.month_sel]["ie"][first_key]
@@ -435,7 +495,14 @@ class TableModel(QAbstractTableModel):
 
     def setData(self, index, value, role=Qt.EditRole):
         if index.isValid() and role == Qt.EditRole:
-            self._df.iat[index.row(), index.column()] = value
+            if self._df.keys()[index.column()] == "Amount":
+                try: #convert entry to float if its an amount for either table
+                    self._df.iat[index.row(), index.column()] = float(value)
+                except: #make value zero if number wasnt entered
+                    self._df.iat[index.row(), index.column()] = float(0.00)  
+                    # MainWindow.show_fading_message("Invalid amount entered in cell, set to 0.00 instead")                  
+            else:
+                self._df.iat[index.row(), index.column()] = value                
             self.dataChanged.emit(index, index, [Qt.EditRole])
             return True
         return False
