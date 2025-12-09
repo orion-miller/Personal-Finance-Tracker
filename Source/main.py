@@ -57,6 +57,8 @@ class Properties:
                 }           
         }   
         }
+        self.year_list = ["2020", "2021", "2022", "2023", "2024", "2025"]
+        self.month_list = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
         self.year_sel = "2025"
         self.month_sel = "12"
         self.year_p1 = "2024"
@@ -91,18 +93,18 @@ class MainWindow(QMainWindow):
 
         self.ui.sheetTable.horizontalHeader().setDefaultAlignment(Qt.AlignLeft | Qt.AlignVCenter)
 
-        self.ui.comboBox_year.addItems(["2020", "2021", "2022", "2023", "2024", "2025"])        
-        self.ui.comboBox_month.addItems(["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"])
+        self.ui.comboBox_year.addItems(self.year_list)        
+        self.ui.comboBox_month.addItems(self.month_list)
         # self.ui.comboBox_month.setItemData([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])        
         self.ui.comboBox_year.setCurrentText("2025")
         self.ui.comboBox_month.setCurrentText("Dec")
-        self.ui.comboBox_year_2.addItems(["2020", "2021", "2022", "2023", "2024", "2025"])        
-        self.ui.comboBox_month_2.addItems(["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"])
+        self.ui.comboBox_year_2.addItems(self.year_list)        
+        self.ui.comboBox_month_2.addItems(self.month_list)
         # self.ui.comboBox_month_2.setItemData(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)          
         self.ui.comboBox_year_2.setCurrentText("2025")
         self.ui.comboBox_month_2.setCurrentText("Dec")
-        self.ui.comboBox_year_3.addItems(["2020", "2021", "2022", "2023", "2024", "2025"])        
-        self.ui.comboBox_month_3.addItems(["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"])
+        self.ui.comboBox_year_3.addItems(self.year_list)        
+        self.ui.comboBox_month_3.addItems(self.month_list)
         # self.ui.comboBox_month_3.setItemData(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)          
         self.ui.comboBox_year_3.setCurrentText("2025")
         self.ui.comboBox_month_3.setCurrentText("Dec")   
@@ -237,9 +239,31 @@ class MainWindow(QMainWindow):
 
         self.show_fading_message("Balance sheet table saved")     
     #----------------------------------------------------------
+    def db_init(self):
+        #cycle through years and months, populate basic db structure with blank entries
+
+        for year in self.ps.year_list:
+            if year not in self.ps.db:
+                self.ps.db[year] = {}
+            for month in self.ps.month_list:
+                if month not in self.ps.db[year]:
+                    df = pd.DataFrame({
+                        "Item":   ["New"],
+                        "Amount": [0.00]})
+
+                    self.ps.db[year][month] = {
+                        "bs": {},      #balance sheet
+                        "bs_met": df,  #balance sheet metrics                    
+                        "ie": {},      #income + expense
+                        "ie_met": {},  #income + expense metrics 
+                        "ie_cat": {},  #income + expense categories                  
+                        "notes": ""    #general notes
+                        }           
+             
+    #----------------------------------------------------------
     def load_month(self):
 
-        #create blank entries in database if month does not exist
+        #create blank entries in database if month does not exist - should be able to remove this later
         if self.ps.year_sel not in self.ps.db:
             self.ps.db[self.ps.year_sel] = {}
        
