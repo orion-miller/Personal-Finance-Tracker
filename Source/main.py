@@ -76,7 +76,7 @@ class MainWindow(QMainWindow):
 
         #Properties
         self.ps = Properties()
-        try:
+        try: #load db file from working directory if present, to overwrite blank template
             self.ps.db = np.load(os.path.join(self.ps.data_folder,"db.npz"), allow_pickle=True)["db"].item()
         except:
             pass
@@ -93,18 +93,18 @@ class MainWindow(QMainWindow):
 
         self.ui.sheetTable.horizontalHeader().setDefaultAlignment(Qt.AlignLeft | Qt.AlignVCenter)
 
-        self.ui.comboBox_year.addItems(self.year_list)        
-        self.ui.comboBox_month.addItems(self.month_list)
+        self.ui.comboBox_year.addItems(self.ps.year_list)        
+        self.ui.comboBox_month.addItems(self.ps.month_list)
         # self.ui.comboBox_month.setItemData([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])        
         self.ui.comboBox_year.setCurrentText("2025")
         self.ui.comboBox_month.setCurrentText("Dec")
-        self.ui.comboBox_year_2.addItems(self.year_list)        
-        self.ui.comboBox_month_2.addItems(self.month_list)
+        self.ui.comboBox_year_2.addItems(self.ps.year_list)        
+        self.ui.comboBox_month_2.addItems(self.ps.month_list)
         # self.ui.comboBox_month_2.setItemData(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)          
         self.ui.comboBox_year_2.setCurrentText("2025")
         self.ui.comboBox_month_2.setCurrentText("Dec")
-        self.ui.comboBox_year_3.addItems(self.year_list)        
-        self.ui.comboBox_month_3.addItems(self.month_list)
+        self.ui.comboBox_year_3.addItems(self.ps.year_list)        
+        self.ui.comboBox_month_3.addItems(self.ps.month_list)
         # self.ui.comboBox_month_3.setItemData(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)          
         self.ui.comboBox_year_3.setCurrentText("2025")
         self.ui.comboBox_month_3.setCurrentText("Dec")   
@@ -139,6 +139,7 @@ class MainWindow(QMainWindow):
         self.ui.comboBox_year_3.currentIndexChanged.connect(self.year_changed)
         self.ui.pushButton_add_row.clicked.connect(self.add_bs_row)
         self.ui.pushButton_saveBS.clicked.connect(self.save_bs_month)
+
     #----------------------------------------------------------
     def config_status_prog(self, action: str):
         #configures status bar to show progress bar and message
@@ -454,10 +455,14 @@ class MainWindow(QMainWindow):
         # except Exception as e:
         #     QMessageBox.critical(self, "Error Loading CSV", str(e))  
     #----------------------------------------------------------
-    def refresh_plots(self):     
-        plotting.refresh(self)      
-
-        self.show_fading_message("Plots refreshed")           
+    def refresh_plots(self):   
+        #check that the time range selected on the dropdowns is valid - end date must be after start date
+        if (self.ui.comboBox_year_3.currentIndex() > self.ui.comboBox_year_2.currentIndex()):
+            self.show_fading_message("Specified time range for plotting is invalid")    
+            #should add to this to account for months within the same year being misaligned         
+        else:
+            plotting.refresh(self)      
+            self.show_fading_message("Plots refreshed")           
     #----------------------------------------------------------
     def show_fading_message(self, text, duration=4000):
         """Show message and then fade it out"""
