@@ -132,7 +132,7 @@
      <attribute name="title">
       <string>Tab 1</string>
      </attribute>
-     <widget class="QTableView" name="tableView">
+     <widget class="QTableView" name="tableBS">
       <property name="geometry">
        <rect>
         <x>0</x>
@@ -142,7 +142,7 @@
        </rect>
       </property>
      </widget>
-     <widget class="QPushButton" name="pushButton_addcol">
+     <widget class="QPushButton" name="pushButton_add_row">
       <property name="geometry">
        <rect>
         <x>240</x>
@@ -152,7 +152,7 @@
        </rect>
       </property>
       <property name="text">
-       <string>Add Col.</string>
+       <string>Add Row</string>
       </property>
      </widget>
      <widget class="QPushButton" name="pushButton_saveBS">
