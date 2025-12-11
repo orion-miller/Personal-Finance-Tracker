@@ -76,6 +76,10 @@ class MainWindow(QMainWindow):
 
         #Properties
         self.ps = Properties()
+
+        #initialize data base with blank template
+        MainWindow.db_init(self)
+
         try: #load db file from working directory if present, to overwrite blank template
             self.ps.db = np.load(os.path.join(self.ps.data_folder,"db.npz"), allow_pickle=True)["db"].item()
         except:
@@ -102,7 +106,7 @@ class MainWindow(QMainWindow):
         self.ui.comboBox_month_2.addItems(self.ps.month_list)
         # self.ui.comboBox_month_2.setItemData(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)          
         self.ui.comboBox_year_2.setCurrentText("2025")
-        self.ui.comboBox_month_2.setCurrentText("Dec")
+        self.ui.comboBox_month_2.setCurrentText("Jan")
         self.ui.comboBox_year_3.addItems(self.ps.year_list)        
         self.ui.comboBox_month_3.addItems(self.ps.month_list)
         # self.ui.comboBox_month_3.setItemData(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)          
@@ -118,6 +122,9 @@ class MainWindow(QMainWindow):
             QStatusBar::item { border: none; }
             QStatusBar { border: none; }
         """)
+
+        MainWindow.year_changed(self)
+        MainWindow.month_changed(self)        
 
         #Connections
         self.ui.actionOpen.triggered.connect(self.pick_folder)
@@ -246,20 +253,23 @@ class MainWindow(QMainWindow):
         for year in self.ps.year_list:
             if year not in self.ps.db:
                 self.ps.db[year] = {}
-            for month in self.ps.month_list:
+            for iM, month in enumerate(self.ps.month_list):
                 if month not in self.ps.db[year]:
                     df = pd.DataFrame({
                         "Item":   ["New"],
                         "Amount": [0.00]})
 
-                    self.ps.db[year][month] = {
-                        "bs": {},      #balance sheet
-                        "bs_met": df,  #balance sheet metrics                    
+                    self.ps.db[year][str(iM+1)] = {
+                        "bs": df,      #balance sheet
+                        "bs_met": {},  #balance sheet metrics                    
                         "ie": {},      #income + expense
                         "ie_met": {},  #income + expense metrics 
                         "ie_cat": {},  #income + expense categories                  
                         "notes": ""    #general notes
-                        }           
+                        }   
+
+                    #calculate metrics
+                    utils.calc_metrics(self, year, str(iM+1))        
              
     #----------------------------------------------------------
     def load_month(self):
@@ -336,7 +346,7 @@ class MainWindow(QMainWindow):
         self.ps.db[self.ps.year_sel][self.ps.month_sel]["notes"] = self.ui.textEdit.toPlainText() 
 
         #calculate metrics
-        utils.calc_metrics(self)
+        utils.calc_metrics(self, self.ps.year_sel, self.ps.month_sel)
 
         #write out to file
         np.savez_compressed(os.path.join(self.ps.data_folder,"db.npz"), db=self.ps.db)

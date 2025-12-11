@@ -42,33 +42,70 @@ from PySide6.QtWidgets import (
 # window.show()
 # app.exec()
 
-from PySide6.QtWidgets import QWidget
-from PySide6.QtWidgets import QLabel, QGraphicsOpacityEffect
-from PySide6.QtCore import QPropertyAnimation, QPoint, QEasingCurve
+# from PySide6.QtWidgets import QWidget
+# from PySide6.QtWidgets import QLabel, QGraphicsOpacityEffect
+# from PySide6.QtCore import QPropertyAnimation, QPoint, QEasingCurve
+# import pyqtgraph as pg
+# import numpy as np
 
-class Window(QWidget):
+# class LivePlot(QMainWindow):
+#     def __init__(self):
+#         super().__init__()
+#         self.plot_widget = pg.PlotWidget()
+#         # ... layout etc ...
+
+#         self.curve1 = self.plot_widget.plot(pen='b')
+#         self.curve2 = self.plot_widget.plot(pen='r')
+
+#         self.x_data = []
+#         self.y1_data = []
+#         self.y2_data = []
+
+#         # Call update() 30 times per second
+#         timer = pg.QtCore.QTimer()
+#         timer.timeout.connect(self.update)
+#         timer.start(33)  # ~30 Hz
+
+#     def update(self):
+#         self.x_data.append(len(self.x_data))
+#         self.y1_data.append(np.random.normal())
+#         self.y2_data.append(np.random.normal() + 2)
+
+#         self.curve1.setData(self.x_data, self.y1_data)
+#         self.curve2.setData(self.x_data, self.y2_data)
+
+# app = QApplication(sys.argv)
+# window = LivePlot()
+# window.show()
+# app.exec()        
+
+
+
+
+# import pyqtgraph.examples
+# pyqtgraph.examples.run()
+
+
+from PySide6.QtWidgets import QApplication, QMainWindow
+import pyqtgraph as pg
+import sys
+
+class MainWindow(QMainWindow):
+
     def __init__(self):
         super().__init__()
-        self.resize(600, 600)
 
-        self.child = QLabel(self)
-        # self.setCentralWidget(self.child)
+        self.graphWidget = pg.PlotWidget()
+        self.setCentralWidget(self.graphWidget)
 
-        self.opacity_effect = QGraphicsOpacityEffect()
-        self.child.setGraphicsEffect(self.opacity_effect)
+        hour = [1,2,3,4,5,6,7,8,9,10]
+        temperature = [30,32,34,32,33,31,29,32,35,45]
 
-        # self.child.setStyleSheet("background-color:red;border-radius:15px;")
-        # self.child.resize(100, 100)
-        self.anim = QPropertyAnimation(self.child.graphicsEffect(), b"opacity")
-        self.anim.setEasingCurve(QEasingCurve.InCubic)
-        self.anim.setStartValue(1.0)
-        self.anim.setEndValue(0.0)
-        self.anim.setDuration(4000)
+        # plot data: x, y values
+        self.graphWidget.plot(hour, temperature)
 
-        self.child.setText("Animated Label")        
-        self.anim.start()
 
 app = QApplication(sys.argv)
-window = Window()
-window.show()
-app.exec()        
+w = MainWindow()
+w.show()
+app.exec()
