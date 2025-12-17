@@ -400,7 +400,7 @@ class MainWindow(QMainWindow):
 
             # self.setCentralWidget(self.ui.graphBS1)
 
-            self.show_fading_message("Sheet saved: {sheet_name}")  
+            self.show_fading_message(f"Sheet saved: {sheet_name}")  
     #----------------------------------------------------------
     def delete_csv(self):
         #delete entry from database
@@ -414,7 +414,7 @@ class MainWindow(QMainWindow):
             #remove entry from dropdown  
             self.ui.sheetDropdown.removeItem(self.ui.sheetDropdown.currentIndex())  
 
-            self.show_fading_message("Sheet deleted: {sheet_name}")               
+            self.show_fading_message(f"Sheet deleted: {sheet_name}")               
     #----------------------------------------------------------
     def load_csv(self):
         # File dialog with CSV filter
