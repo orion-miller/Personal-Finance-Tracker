@@ -87,7 +87,6 @@ def refresh(self):
             pdata["ie_met"] = pd.concat([pdata["ie_met"], pd.DataFrame([self.ps.db[year][str(iM +1)]["ie_met"]])], axis=0, ignore_index=True)  
             pdata["ie_cat"] = pd.concat([pdata["ie_met"], pd.DataFrame([self.ps.db[year][str(iM +1)]["ie_cat"]])], axis=0, ignore_index=True)                       
 
-
     #clear all plots
     self.ui.graphBS1.clear() 
     self.ui.graphBS2.clear() 
@@ -96,7 +95,7 @@ def refresh(self):
     self.ui.graphIE2.clear() 
     self.ui.graphIE3.clear() 
 
-    colors = ['g', 'r', 'c', 'm', 'y', 'w', 'orange', 'pink', 'gray']
+    colors = ['g', 'r', 'y', 'c', 'm', 'w', 'orange', 'pink', 'gray']
 
     #----------------------------------------------------------------------------
     #replot for all figures
@@ -106,8 +105,8 @@ def refresh(self):
     # dtable = pdata["bs"]
     # x = np.arange(len(pdata["bs"]))
 
-    # for i, key in enumerate(dtable.keys()):
-    #     fig.plot(x=x, y=dtable[key], width=1, pen=colors[i], name=key)
+    # for i, key in enumerate(dtable['Item']):
+    #     fig.plot(x=x, y=dtable['Amount'], width=1, pen=colors[i], name=key)
 
     #Balance sheet 2
     fig = self.ui.graphBS2  

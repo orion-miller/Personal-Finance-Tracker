@@ -38,9 +38,9 @@ from win_tb import WinTB
 class Properties:
     def __init__(self):
         self.APP_VERSION = "1.0"
-        self.data_folder = "D:\\!Orion_Documents\\Financial\\!OM_Finance_Tracker" # None
-        self.income_types = ["Work", "Investment", "Sales", "Rewards"]
-        self.expense_types = ["Transfer", "Bills", "Groceries","Takeout","Car","Travel","Entertainment","Other"]
+        self.data_folder = "D:\\!Orion_Documents\\Financial\\!OM_Finance_Tracker" 
+        self.income_types = ["Work", "Investment", "Sales", "Rewards"] #make editable through ui later
+        self.expense_types = ["Transfer", "Bills", "Groceries","Takeout","Car","Travel","Entertainment","Other"] #make editable through ui later
         self.income_expense_types = self.income_types + self.expense_types   
         self.bs_format = pd.DataFrame({
             "Item":   ["New"],
@@ -57,8 +57,8 @@ class Properties:
                 }           
         }   
         }
-        self.year_list = ["2020", "2021", "2022", "2023", "2024", "2025"]
-        self.month_list = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+        self.year_list = ["2020", "2021", "2022", "2023", "2024", "2025"] #make editable through ui later
+        self.month_list = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"] #make editable through ui later
         self.year_sel = "2025"
         self.month_sel = "12"
         self.year_p1 = "2024"
@@ -145,6 +145,7 @@ class MainWindow(QMainWindow):
         self.ui.comboBox_year_2.currentIndexChanged.connect(self.year_changed)      
         self.ui.comboBox_year_3.currentIndexChanged.connect(self.year_changed)
         self.ui.pushButton_add_row.clicked.connect(self.add_bs_row)
+        self.ui.pushButton_copy_previous.clicked.connect(self.bs_copy_previous)        
         self.ui.pushButton_saveBS.clicked.connect(self.save_bs_month)
 
     #----------------------------------------------------------
@@ -215,6 +216,26 @@ class MainWindow(QMainWindow):
                 self.ui.tabWidget.setCurrentIndex(0)
             case "Income + Expense":        
                 self.ui.tabWidget.setCurrentIndex(1)      
+    #----------------------------------------------------------
+    def bs_copy_previous(self):
+        #copy balance sheet from previous month into current month
+
+        # month_idx = self.ps.month_list.index(self.ps.month_sel)
+        year_idx = self.ps.year_list.index(self.ps.year_sel)
+
+        if int(self.ps.month_sel) == 1:
+            month_prev = "12"
+            year_prev = self.ps.year_list[year_idx - 1]
+        else:
+            month_prev = str(int(self.ps.month_sel) - 1) #these conversions are fucked, need to simplify
+            year_prev = self.ps.year_sel
+
+        self.ps.db[self.ps.year_sel][self.ps.month_sel]["bs"] = self.ps.db[year_prev][month_prev]["bs"].copy()
+
+        self.show_fading_message("Previous month copied") 
+
+        #may need to call load month here
+
     #----------------------------------------------------------
     def add_bs_row(self):  
         #add row to balance sheet table
