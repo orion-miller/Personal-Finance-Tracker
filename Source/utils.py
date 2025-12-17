@@ -4,20 +4,22 @@ import pandas as pd
 def calc_metrics(self, year, month):
     #calculate metrics from balance sheet and income expense data
 
-    self.ps.db[year][month]["bs_met"]["assets"] = 0 
-    self.ps.db[year][month]["bs_met"]["debts"] = 0 
-    self.ps.db[year][month]["bs_met"]["assets - debts"] = 0
+    #initialize balance sheet fields
+    self.ps.db[year][month]["bs_met"]["Assets"] = 0 
+    self.ps.db[year][month]["bs_met"]["Debts"] = 0 
+    self.ps.db[year][month]["bs_met"]["Assets - Debts"] = 0
 
+    #populate balance sheet fields
     bs_amt = self.ps.db[year][month]["bs"]['Amount']
     if len(bs_amt) > 0:
-        self.ps.db[year][month]["bs_met"]["assets"] = np.sum(bs_amt[bs_amt > 0])  
-        self.ps.db[year][month]["bs_met"]["debts"] = np.sum(bs_amt[bs_amt < 0])  
-        self.ps.db[year][month]["bs_met"]["assets - debts"] = self.ps.db[year][month]["bs_met"]["assets"] + self.ps.db[year][month]["bs_met"]["debts"]     
+        self.ps.db[year][month]["bs_met"]["Assets"] = np.sum(bs_amt[bs_amt > 0])  
+        self.ps.db[year][month]["bs_met"]["Debts"] = np.sum(bs_amt[bs_amt < 0])  
+        self.ps.db[year][month]["bs_met"]["Assets - Debts"] = self.ps.db[year][month]["bs_met"]["Assets"] + self.ps.db[year][month]["bs_met"]["Debts"]     
 
     #initialize income expense fields
-    self.ps.db[year][month]["ie_met"]["income"] = 0
-    self.ps.db[year][month]["ie_met"]["expense"] = 0
-    self.ps.db[year][month]["ie_met"]["income - expense"] = 0
+    self.ps.db[year][month]["ie_met"]["Income"] = 0
+    self.ps.db[year][month]["ie_met"]["Expense"] = 0
+    self.ps.db[year][month]["ie_met"]["Income - Expense"] = 0
 
     for sheet in self.ps.db[year][month]["ie"]:
         ie = self.ps.db[year][month]["ie"][sheet]
@@ -33,9 +35,9 @@ def calc_metrics(self, year, month):
     for sheet in self.ps.db[year][month]["ie"]:
         ie = self.ps.db[year][month]["ie"][sheet]
         amounts = pd.to_numeric(ie["Amount"], errors='coerce')
-        self.ps.db[year][month]["ie_met"]["income"] += np.sum(amounts[amounts > 0])  
-        self.ps.db[year][month]["ie_met"]["expense"] += np.sum(amounts[amounts < 0])  
-        self.ps.db[year][month]["ie_met"]["income - expense"] += self.ps.db[year][month]["ie_met"]["income"] + self.ps.db[year][month]["ie_met"]["expense"]
+        self.ps.db[year][month]["ie_met"]["Income"] += np.sum(amounts[amounts > 0])  
+        self.ps.db[year][month]["ie_met"]["Expense"] += np.sum(amounts[amounts < 0])  
+        self.ps.db[year][month]["ie_met"]["Income - Expense"] += self.ps.db[year][month]["ie_met"]["Income"] + self.ps.db[year][month]["ie_met"]["Expense"]
         
         #find totals for each category
         for cat in self.ps.income_types:

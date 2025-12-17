@@ -86,26 +86,60 @@ from PySide6.QtWidgets import (
 # pyqtgraph.examples.run()
 
 
-from PySide6.QtWidgets import QApplication, QMainWindow
+# from PySide6.QtWidgets import QApplication, QMainWindow
+# import pyqtgraph as pg
+# import sys
+
+# class MainWindow(QMainWindow):
+
+#     def __init__(self):
+#         super().__init__()
+
+#         self.graphWidget = pg.PlotWidget()
+#         self.setCentralWidget(self.graphWidget)
+
+#         hour = [1,2,3,4,5,6,7,8,9,10]
+#         temperature = [30,32,34,32,33,31,29,32,35,45]
+
+#         # plot data: x, y values
+#         self.graphWidget.plot(hour, temperature)
+
+
+# app = QApplication(sys.argv)
+# w = MainWindow()
+# w.show()
+# app.exec()
+
+
 import pyqtgraph as pg
-import sys
+import numpy as np
 
-class MainWindow(QMainWindow):
+app = pg.mkQApp("Crosshair Example")
+win = pg.GraphicsLayoutWidget(show=True)
+label = pg.LabelItem(justify='right')
+win.addItem(label)
 
-    def __init__(self):
-        super().__init__()
+p = win.addPlot(row=1, col=0)
+data = np.sin(np.linspace(0, 10, 1000)) + np.random.normal(size=1000, scale=0.1)
+curve = p.plot(data, pen='y')
 
-        self.graphWidget = pg.PlotWidget()
-        self.setCentralWidget(self.graphWidget)
+# Crosshair lines
+vLine = pg.InfiniteLine(angle=90, movable=False, pen='g')
+hLine = pg.InfiniteLine(angle=0, movable=False, pen='g')
+p.addItem(vLine, ignoreBounds=True)
+p.addItem(hLine, ignoreBounds=True)
 
-        hour = [1,2,3,4,5,6,7,8,9,10]
-        temperature = [30,32,34,32,33,31,29,32,35,45]
+def mouseMoved(evt):
+    pos = evt[0]  # evt[0] is the scene position
+    if p.sceneBoundingRect().contains(pos):
+        mousePoint = p.vb.mapSceneToView(pos)
+        index = np.argmin(np.abs(np.linspace(0, 10, len(data)) - mousePoint.x()))
+        x_val = np.linspace(0, 10, len(data))[index]
+        y_val = data[index]
+        label.setText(f"x={x_val:.3f}, y={y_val:.3f}")
+        vLine.setPos(x_val)
+        hLine.setPos(y_val)
 
-        # plot data: x, y values
-        self.graphWidget.plot(hour, temperature)
-
-
-app = QApplication(sys.argv)
-w = MainWindow()
-w.show()
+proxy = pg.SignalProxy(p.scene().sigMouseMoved, rateLimit=60, slot=mouseMoved)
+win.show()
 app.exec()

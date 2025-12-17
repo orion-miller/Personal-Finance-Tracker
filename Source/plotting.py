@@ -82,11 +82,14 @@ def refresh(self):
                 continue
 
             #extract and concatenate data
-            pdata["bs"] = pd.concat([pdata["bs"], self.ps.db[year][str(iM +1)]["bs"]], axis=0, ignore_index=True)            
+            # bs_transformed = self.ps.db[year][str(iM +1)]["bs"].set_index('Item')['Amount'].to_frame().T
+            bs = self.ps.db[year][str(iM +1)]["bs"]            
+            bs_df = pd.DataFrame({item: [amount] for item, amount in zip(bs['Item'], bs['Amount'])})
+            pdata["bs"] = pd.concat([pdata["bs"], bs_df], axis=0, ignore_index=True)    
+
             pdata["bs_met"] = pd.concat([pdata["bs_met"], pd.DataFrame([self.ps.db[year][str(iM +1)]["bs_met"]])], axis=0, ignore_index=True)
             pdata["ie_met"] = pd.concat([pdata["ie_met"], pd.DataFrame([self.ps.db[year][str(iM +1)]["ie_met"]])], axis=0, ignore_index=True)  
-            pdata["ie_cat"] = pd.concat([pdata["ie_met"], pd.DataFrame([self.ps.db[year][str(iM +1)]["ie_cat"]])], axis=0, ignore_index=True)                       
-
+            pdata["ie_cat"] = pd.concat([pdata["ie_cat"], pd.DataFrame([self.ps.db[year][str(iM +1)]["ie_cat"]])], axis=0, ignore_index=True)                       
 
     #clear all plots
     self.ui.graphBS1.clear() 
@@ -96,18 +99,18 @@ def refresh(self):
     self.ui.graphIE2.clear() 
     self.ui.graphIE3.clear() 
 
-    colors = ['g', 'r', 'c', 'm', 'y', 'w', 'orange', 'pink', 'gray']
+    colors = ['g', 'r', 'y', 'c', 'm', 'w', 'orange', 'pink', 'gray', 'g', 'r', 'y', 'c', 'm', 'w', 'orange', 'pink', 'gray'] #shouldnt repeat
 
     #----------------------------------------------------------------------------
     #replot for all figures
 
     # #Balance sheet 1
-    # fig = self.ui.graphBS1  
-    # dtable = pdata["bs"]
-    # x = np.arange(len(pdata["bs"]))
+    fig = self.ui.graphBS1  
+    dtable = pdata["bs"]
+    x = np.arange(len(pdata["bs"]))
 
-    # for i, key in enumerate(dtable.keys()):
-    #     fig.plot(x=x, y=dtable[key], width=1, pen=colors[i], name=key)
+    for i, key in enumerate(dtable.keys()):
+        fig.plot(x=x, y=dtable[key], width=1, pen=colors[i], name=key)
 
     #Balance sheet 2
     fig = self.ui.graphBS2  
@@ -135,13 +138,13 @@ def refresh(self):
 
     plot.setXRange(-0.6, len(cats) - 0.4) 
 
-    # #Income Expense 1
-    # fig = self.ui.graphIE1  
-    # dtable = pdata["ie_cat"]
-    # x = np.arange(len(pdata["ie_cat"]))
+    #Income Expense 1
+    fig = self.ui.graphIE1  
+    dtable = pdata["ie_cat"]
+    x = np.arange(len(pdata["ie_cat"]))
 
-    # for i, key in enumerate(dtable.keys()):
-    #     fig.plot(x=x, y=dtable[key], width=1, pen=colors[i], name=key)
+    for i, key in enumerate(dtable.keys()):
+        fig.plot(x=x, y=dtable[key], width=1, pen=colors[i], name=key)
 
     #Income Expense 2
     fig = self.ui.graphIE2  
