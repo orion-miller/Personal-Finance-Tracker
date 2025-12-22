@@ -9,14 +9,14 @@ def init(self):
     plot.showGrid(x=True, y=True)
     plot.setTitle("Balances vs. Time")
     plot.setLabel('left', 'Amount (USD)')
-    plot.setLabel('bottom', 'Time')
+    plot.setLabel('bottom', 'Time (Year-Month)')
     plot.addLegend(offset=(2, 2))
 
     plot = self.ui.graphBS2            
     plot.showGrid(x=True, y=True)
     plot.setTitle("Totals vs. Time")
     plot.setLabel('left', 'Amount (USD)')
-    plot.setLabel('bottom', 'Time')
+    plot.setLabel('bottom', 'Time (Year-Month)')
     plot.addLegend(offset=(2, 2))    
 
     plot = self.ui.graphBS3           
@@ -30,14 +30,14 @@ def init(self):
     plot.showGrid(x=True, y=True)
     plot.setTitle("Income and Expense vs. Time")
     plot.setLabel('left', 'Amount (USD)')
-    plot.setLabel('bottom', 'Time')
+    plot.setLabel('bottom', 'Time (Year-Month)')
     plot.addLegend(offset=(2, 2)) 
 
     plot = self.ui.graphIE2            
     plot.showGrid(x=True, y=True)
     plot.setTitle("Totals vs. Time")
     plot.setLabel('left', 'Amount (USD)')
-    plot.setLabel('bottom', 'Time')
+    plot.setLabel('bottom', 'Time (Year-Month)')
     plot.addLegend(offset=(2, 2)) 
 
     plot = self.ui.graphIE3   
@@ -59,7 +59,8 @@ def refresh(self):
         "bs": pd.DataFrame(),      #balance sheet
         "bs_met": pd.DataFrame(),  #balance sheet metrics                    
         "ie_met": pd.DataFrame(),  #income + expense metrics   
-        "ie_cat": pd.DataFrame(),  #income + expense categories                                             
+        "ie_cat": pd.DataFrame(),  #income + expense categories     
+        "month": pd.DataFrame(),   #year-month labels                                              
     }
 
     #get time range, years and months
@@ -78,18 +79,20 @@ def refresh(self):
             continue
 
         for iM, month in enumerate(self.ps.month_list):
-            if (iM < monthIdx1 and iY == 0) or (iM > monthIdx2 and iY == len(self.year_list)-1):
+            if (iM < monthIdx1 and iY == yearIdx1) or (iM > monthIdx2 and iY == yearIdx2):
                 continue
 
             #extract and concatenate data
-            # bs_transformed = self.ps.db[year][str(iM +1)]["bs"].set_index('Item')['Amount'].to_frame().T
             bs = self.ps.db[year][str(iM +1)]["bs"]            
             bs_df = pd.DataFrame({item: [amount] for item, amount in zip(bs['Item'], bs['Amount'])})
             pdata["bs"] = pd.concat([pdata["bs"], bs_df], axis=0, ignore_index=True)    
 
             pdata["bs_met"] = pd.concat([pdata["bs_met"], pd.DataFrame([self.ps.db[year][str(iM +1)]["bs_met"]])], axis=0, ignore_index=True)
             pdata["ie_met"] = pd.concat([pdata["ie_met"], pd.DataFrame([self.ps.db[year][str(iM +1)]["ie_met"]])], axis=0, ignore_index=True)  
-            pdata["ie_cat"] = pd.concat([pdata["ie_cat"], pd.DataFrame([self.ps.db[year][str(iM +1)]["ie_cat"]])], axis=0, ignore_index=True)                       
+            pdata["ie_cat"] = pd.concat([pdata["ie_cat"], pd.DataFrame([self.ps.db[year][str(iM +1)]["ie_cat"]])], axis=0, ignore_index=True)   
+            pdata["month"] = pd.concat([pdata["month"], pd.DataFrame([f"{year[2:4]}-{str(iM +1)}"])], axis=0, ignore_index=True)                    
+
+    pdata["month"] = pdata["month"][0]
 
     #clear all plots
     self.ui.graphBS1.clear() 
@@ -99,18 +102,55 @@ def refresh(self):
     self.ui.graphIE2.clear() 
     self.ui.graphIE3.clear() 
 
-    colors = ['g', 'r', 'y', 'c', 'm', 'w', 'orange', 'pink', 'gray', 'g', 'r', 'y', 'c', 'm', 'w', 'orange', 'pink', 'gray'] #shouldnt repeat
+    #define color order for plotting
+    colors = [
+        '#00ff00',        
+        '#ff0000',
+        '#ffffff',     
+        '#0066ff',           
+        '#ff9900',
+        '#9933ff',
+        "#6acdff",
+        "#e8abe8",
+        '#b38600',
+        '#339933',
+        "#1628AA",        
+        '#9999ff',
+        '#800000',
+        '#008080',
+        '#c8ef7a',
+        '#737373',
+        '#9e9e03',
+        '#ff66ff',
+        "#4dc567", 
+        "#024760",         
+        "#ffd857", 
+        "#57ffae",  
+        "#ff5757", 
+        "#5f3e0a",  
+        "#33502D",          
+        '#4d4dff',         
+        "#433a2c",   
+        "#25097f", 
+        "#ccff00",  
+        "#e4531a",                                                                   
+    ]
 
     #----------------------------------------------------------------------------
     #replot for all figures
 
-    # #Balance sheet 1
+    #Balance sheet 1
     fig = self.ui.graphBS1  
     dtable = pdata["bs"]
     x = np.arange(len(pdata["bs"]))
 
     for i, key in enumerate(dtable.keys()):
         fig.plot(x=x, y=dtable[key], width=1, pen=colors[i], name=key)
+        # fig.plot(x=x, y=dtable[key], width=1, pen=colors[i], symbol='o', name=key)        
+
+    # Custom x-axis labels
+    ax = fig.getAxis('bottom') 
+    ax.setTicks([[(i, month) for i, month in enumerate(pdata["month"])]])       
 
     #Balance sheet 2
     fig = self.ui.graphBS2  
@@ -120,8 +160,12 @@ def refresh(self):
     for i, key in enumerate(dtable.keys()):
         fig.plot(x=x, y=dtable[key], width=1, pen=colors[i], name=key)
   
+    # Custom x-axis labels
+    ax = fig.getAxis('bottom') 
+    ax.setTicks([[(i, month) for i, month in enumerate(pdata["month"])]]) 
+
     #Balance sheet 3
-    plot = self.ui.graphBS3  
+    fig = self.ui.graphBS3  
 
     # Data
     dtable = self.ps.db[self.ps.year_sel][self.ps.month_sel]["bs"]
@@ -129,14 +173,12 @@ def refresh(self):
 
     x = np.arange(len(cats))
     bars = pg.BarGraphItem(x=x, height=list(dtable['Amount']), width=0.6, brush='#0066cc', pen='k')
-    plot.addItem(bars)
+    fig.addItem(bars)
 
     # Custom x-axis labels
-    ax = plot.getAxis('bottom')
+    ax = fig.getAxis('bottom')
     ax.setTicks([[(i, cat) for i, cat in enumerate(cats)]])
-    # ax.setTickLabelRotation(90)
-
-    plot.setXRange(-0.6, len(cats) - 0.4) 
+    fig.setXRange(-0.6, len(cats) - 0.4) 
 
     #Income Expense 1
     fig = self.ui.graphIE1  
@@ -146,6 +188,10 @@ def refresh(self):
     for i, key in enumerate(dtable.keys()):
         fig.plot(x=x, y=dtable[key], width=1, pen=colors[i], name=key)
 
+    # Custom x-axis labels
+    ax = fig.getAxis('bottom') 
+    ax.setTicks([[(i, month) for i, month in enumerate(pdata["month"])]]) 
+
     #Income Expense 2
     fig = self.ui.graphIE2  
     dtable = pdata["ie_met"]
@@ -154,8 +200,12 @@ def refresh(self):
     for i, key in enumerate(dtable.keys()):
         fig.plot(x=x, y=dtable[key], width=1, pen=colors[i], name=key)
 
+    # Custom x-axis labels
+    ax = fig.getAxis('bottom') 
+    ax.setTicks([[(i, month) for i, month in enumerate(pdata["month"])]]) 
+
     #Income Expense 3
-    plot = self.ui.graphIE3  
+    fig = self.ui.graphIE3  
 
     # Data
     dtable = self.ps.db[self.ps.year_sel][self.ps.month_sel]["ie_cat"]
@@ -163,11 +213,9 @@ def refresh(self):
 
     x = np.arange(len(cats))
     bars = pg.BarGraphItem(x=x, height=list(dtable.values()), width=0.6, brush='#0066cc', pen='k')
-    plot.addItem(bars)
+    fig.addItem(bars)
 
     # Custom x-axis labels
-    ax = plot.getAxis('bottom')
+    ax = fig.getAxis('bottom')
     ax.setTicks([[(i, cat) for i, cat in enumerate(cats)]])
-    # ax.setTickLabelRotation(90)
-
-    plot.setXRange(-0.6, len(cats) - 0.4) 
+    fig.setXRange(-0.6, len(cats) - 0.4) 
