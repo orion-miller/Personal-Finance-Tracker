@@ -1,59 +1,104 @@
 from PySide6.QtWidgets import (
     QWidget, 
     QGraphicsOpacityEffect,
-    QLabel
+    QLabel,
+    QProgressBar
 )
 from PySide6.QtCore import (
-    QPropertyAnimation, QEasingCurve
+    Qt, QPropertyAnimation, QEasingCurve
 )
+from win_tb import WinTB
 
 class prog:
-    def __init__(app):
-        pass
-    def update(app, msg, value):
-        pass
-    def close(app):
-        pass
+    def __init__(self, main_obj):
+        self.tb = WinTB(main_obj.winId())    
+
+        WinTB.set_state(self.tb, "normal")
+        prog.config_status_prog(main_obj, 'construct') #create progress elements in status bar 
+
+    def update_val(self, main_obj, msg, value):
+        WinTB.set_val(self.tb, value)         
+        main_obj.ui.progress.setValue(value)
+        main_obj.ui.status_label.setText(msg)  
+
+    def indeterminate(self, main_obj, msg):
+        WinTB.set_state(self.tb, "indeterminate")         
+        main_obj.ui.status_label.setText(msg)  
+
+    def close(self, main_obj):
+        WinTB.set_state(self.tb, "normal")          
+        prog.config_status_prog(main_obj, 'destruct') #remove progress elements in status bar
+
+    def config_status_prog(main_obj, action: str):
+        #configures status bar to show progress bar and message
+
+        if action == 'construct':
+            # Create progress bar, add it to the status bar
+            main_obj.ui.progress = QProgressBar()
+            main_obj.ui.progress.setMaximumWidth(75)  
+            main_obj.ui.progress.setAlignment(Qt.AlignCenter)    
+            main_obj.ui.progress.setRange(0, 100)         
+            main_obj.ui.statusbar.addWidget(main_obj.ui.progress)  
+
+            # Create a permanent label inside the status bar (invisible at first)
+            main_obj.ui.status_label = QLabel("")
+            main_obj.ui.status_label.setMinimumWidth(400)   
+            main_obj.ui.statusbar.addWidget(main_obj.ui.status_label)                   
+
+            #extra spacer to push prior items to left
+            main_obj.ui.status_spacer = QWidget()    
+            main_obj.ui.statusbar.addWidget(main_obj.ui.status_spacer, stretch=1) 
+
+        elif action == 'destruct':
+            # Remove progress bar and label from status bar
+            main_obj.ui.statusbar.removeWidget(main_obj.ui.progress)
+            main_obj.ui.statusbar.removeWidget(main_obj.ui.status_label)
+            main_obj.ui.statusbar.removeWidget(main_obj.ui.status_spacer)
+
+            # Delete references
+            # del main_obj.ui.progress
+            # del main_obj.ui.status_label
+            # del main_obj.ui.status_spacer        
 
 class msg:
     @staticmethod    
-    def show(app, text, color="green", duration=4000):
+    def show(main_obj, text, color="green", duration=4000):
         """Show message and then fade it out"""
 
         # Cancel any running animation first
-        if hasattr(app, "_fade_anim"):
-            app._fade_anim.stop()
-            msg.clear_fading_components(app)
+        if hasattr(main_obj, "_fade_anim"):
+            main_obj._fade_anim.stop()
+            msg.clear_fading_components(main_obj)
 
         #Create components
         # Create a label inside the status bar
-        app.ui.status_label = QLabel("")
-        app.ui.status_label.setMinimumWidth(400)   
-        app.ui.status_label.setStyleSheet(f"color: {color};")         
-        app.ui.statusbar.addWidget(app.ui.status_label)                
+        main_obj.ui.status_label = QLabel("")
+        main_obj.ui.status_label.setMinimumWidth(400)   
+        main_obj.ui.status_label.setStyleSheet(f"color: {color};")         
+        main_obj.ui.statusbar.addWidget(main_obj.ui.status_label)                
 
         #extra spacer to push prior items to left
-        app.ui.status_spacer = QWidget()    
-        app.ui.statusbar.addWidget(app.ui.status_spacer, stretch=1)             
+        main_obj.ui.status_spacer = QWidget()    
+        main_obj.ui.statusbar.addWidget(main_obj.ui.status_spacer, stretch=1)             
 
         # Fade in instantly, stay, then fade out
-        app.effect = QGraphicsOpacityEffect()     
-        app.ui.status_label.setGraphicsEffect(app.effect)
+        main_obj.effect = QGraphicsOpacityEffect()     
+        main_obj.ui.status_label.setGraphicsEffect(main_obj.effect)
 
-        app._fade_anim = QPropertyAnimation(app.ui.status_label.graphicsEffect(), b"opacity")
-        app._fade_anim.setDuration(duration)
-        app._fade_anim.setEasingCurve(QEasingCurve.InCubic)        
-        app._fade_anim.setStartValue(1)          
-        app._fade_anim.setEndValue(0)        
+        main_obj._fade_anim = QPropertyAnimation(main_obj.ui.status_label.graphicsEffect(), b"opacity")
+        main_obj._fade_anim.setDuration(duration)
+        main_obj._fade_anim.setEasingCurve(QEasingCurve.InCubic)        
+        main_obj._fade_anim.setStartValue(1)          
+        main_obj._fade_anim.setEndValue(0)        
 
         #Create fading text
-        app.ui.status_label.setText(text)        
-        app._fade_anim.start()    
+        main_obj.ui.status_label.setText(text)        
+        main_obj._fade_anim.start()    
 
-        app._fade_anim.finished.connect(lambda: msg.clear_fading_components(app))
+        main_obj._fade_anim.finished.connect(lambda: msg.clear_fading_components(main_obj))
 
     @staticmethod 
-    def clear_fading_components(app):
+    def clear_fading_components(main_obj):
         # Remove progress bar and label from status bar
-        app.ui.statusbar.removeWidget(app.ui.status_label)
-        app.ui.statusbar.removeWidget(app.ui.status_spacer)
+        main_obj.ui.statusbar.removeWidget(main_obj.ui.status_label)
+        main_obj.ui.statusbar.removeWidget(main_obj.ui.status_spacer)

@@ -30,7 +30,6 @@ import ollama
 import plotting
 import utils
 import status
-from win_tb import WinTB
 
 #COMPILATION CMD:
 # pyside6-uic mainwindow.ui -o mainwindow.py
@@ -147,38 +146,6 @@ class MainWindow(QMainWindow):
         self.ui.pushButton_add_row.clicked.connect(self.add_bs_row)
         self.ui.pushButton_copy_previous.clicked.connect(self.bs_copy_previous)        
         self.ui.pushButton_saveBS.clicked.connect(self.save_bs_month)
-
-    #----------------------------------------------------------
-    def config_status_prog(self, action: str):
-        #configures status bar to show progress bar and message
-
-        if action == 'construct':
-            # Create progress bar, add it to the status bar
-            self.ui.progress = QProgressBar()
-            self.ui.progress.setMaximumWidth(75)  
-            self.ui.progress.setAlignment(Qt.AlignCenter)    
-            self.ui.progress.setRange(0, 100)         
-            self.ui.statusbar.addWidget(self.ui.progress)  
-
-            # Create a permanent label inside the status bar (invisible at first)
-            self.ui.status_label = QLabel("")
-            self.ui.status_label.setMinimumWidth(400)   
-            self.ui.statusbar.addWidget(self.ui.status_label)                   
-
-            #extra spacer to push prior items to left
-            self.ui.status_spacer = QWidget()    
-            self.ui.statusbar.addWidget(self.ui.status_spacer, stretch=1) 
-
-        elif action == 'destruct':
-            # Remove progress bar and label from status bar
-            self.ui.statusbar.removeWidget(self.ui.progress)
-            self.ui.statusbar.removeWidget(self.ui.status_label)
-            self.ui.statusbar.removeWidget(self.ui.status_spacer)
-
-            # Delete references
-            # del self.ui.progress
-            # del self.ui.status_label
-            # del self.ui.status_spacer
 
     #----------------------------------------------------------
     def pick_folder(self):
@@ -359,7 +326,7 @@ class MainWindow(QMainWindow):
             #clear dropdown
             self.ui.sheetDropdown.clear()
              
-        status.msg.show(self, f"{self.ps.month_sel} {self.ps.year_sel} data loaded") 
+        status.msg.show(self, f"{self.ui.comboBox_month.currentText()} {self.ps.year_sel} data loaded") 
     #----------------------------------------------------------
     def save_month(self):
 
@@ -371,7 +338,7 @@ class MainWindow(QMainWindow):
         #write out to file
         np.savez_compressed(os.path.join(self.ps.data_folder,"db.npz"), db=self.ps.db)
 
-        status.msg.show(self, f"{self.ps.month_sel} {self.ps.year_sel} data saved")  
+        status.msg.show(self, f"{self.ui.comboBox_month.currentText()} {self.ps.year_sel} data saved")  
 
         # msg = QMessageBox(QMessageBox.NoIcon, "Month Saved Successfully", "")
         # msg.setIcon(QMessageBox.Information)
@@ -435,15 +402,11 @@ class MainWindow(QMainWindow):
         df.drop(df.columns[[2,3]], axis=1, inplace=True)
         df.insert(2, "Type", "-")
 
-        self.config_status_prog('construct') #create progress elements in status bar
-        tb = WinTB(self.winId())              
-        WinTB.set_state(tb, "normal")
+        TB = status.prog(self)
         
         for i in range(len(df)):
             prog_value = int(100*(i+1)/len(df))
-            self.ui.progress.setValue(prog_value)
-            self.ui.status_label.setText("Processing expenses")  
-            WinTB.set_val(tb, prog_value) 
+            status.prog.update_val(TB, self, "Processing expenses", prog_value)
 
             # assign initial categorizations of items using ollama
             if df['Amount'][i] > 0:
@@ -462,8 +425,7 @@ class MainWindow(QMainWindow):
             if response_isolated in self.ps.expense_types:
                 df['Type'].loc[i] = response_isolated                                   
 
-        self.config_status_prog('destruct') #remove progress elements in status bar
-        WinTB.set_state(tb, "normal")        
+        status.prog.close(TB, self)      
 
         # Show in table
         model = TableModel(df)
