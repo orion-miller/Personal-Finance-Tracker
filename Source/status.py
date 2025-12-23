@@ -67,7 +67,7 @@ class prog:
 
 class msg:
     @staticmethod    
-    def show(main_obj, text, color="green", duration=4000):
+    def show(main_obj, text, color="white", duration=4000):
         """Show message and then fade it out"""
 
         # Cancel any running animation first

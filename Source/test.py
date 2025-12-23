@@ -304,6 +304,88 @@ from PySide6.QtWidgets import (
 # pg.exec()
 
 
-import pyqtgraph.examples
-pyqtgraph.examples.run()
+# import pyqtgraph.examples
+# pyqtgraph.examples.run()
 
+
+
+import sys
+import numpy as np
+from PySide6.QtWidgets import QApplication, QMainWindow, QToolBar
+from PySide6.QtGui import QIcon, QAction
+import pyqtgraph as pg
+from pyqtgraph.dockarea import DockArea, Dock
+
+app = QApplication(sys.argv)
+pg.setConfigOptions(antialias=True)
+
+win = QMainWindow()
+win.resize(1200, 800)
+win.setWindowTitle("PyQtGraph with Toolbar")
+
+# Central DockArea
+area = DockArea()
+win.setCentralWidget(area)
+
+# Create some example plots (as before)
+x = np.linspace(0, 10, 500)
+p1 = pg.PlotWidget(title="Sine Wave")
+p1.plot(x, np.sin(x))
+d1 = Dock("Sine", size=(600, 400))
+d1.addWidget(p1)
+area.addDock(d1)
+
+p2 = pg.PlotWidget(title="Cosine Wave")
+p2.plot(x, np.cos(x))
+p2.setXLink(p1)  # Link X-axes
+d2 = Dock("Cosine", size=(600, 400))
+d2.addWidget(p2)
+area.addDock(d2, 'bottom', d1)
+
+# === ADD TOOLBAR ===
+toolbar = win.addToolBar("Main Toolbar")
+# toolbar.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)  # Optional: text next to icon
+
+# Button 1: Clear all plots
+def clear_plots():
+    p1.clear()
+    p2.clear()
+
+clear_action = QAction(QIcon.fromTheme("edit-clear"), "Clear Plots", win)
+clear_action.setShortcut("Ctrl+L")
+clear_action.triggered.connect(clear_plots)
+toolbar.addAction(clear_action)
+
+# Button 2: Reset view (auto-range)
+def reset_view():
+    p1.enableAutoRange()
+    p2.enableAutoRange()  # Since linked, one is enough, but safe
+
+reset_action = QAction(QIcon.fromTheme("zoom-fit-best"), "Reset Zoom", win)
+reset_action.setShortcut("Ctrl+R")
+reset_action.triggered.connect(reset_view)
+toolbar.addAction(reset_action)
+
+# Button 3: Custom action example
+def print_message():
+    print("Toolbar button clicked!")
+
+custom_action = QAction("Say Hello", win)
+custom_action.triggered.connect(print_message)
+toolbar.addAction(custom_action)
+
+# Separator and another button
+toolbar.addSeparator()
+
+save_action = QAction(QIcon.fromTheme("document-save"), "Save Layout", win)
+def save_layout():
+    state = area.saveState()
+    with open("layout_state.bin", "wb") as f:
+        f.write(state)
+    print("Layout saved!")
+
+save_action.triggered.connect(save_layout)
+toolbar.addAction(save_action)
+
+win.show()
+sys.exit(app.exec())

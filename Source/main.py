@@ -122,13 +122,15 @@ class MainWindow(QMainWindow):
         """)
 
         #Add figure docks
-        self.ui.dock_BS1 = Dock("Balances vs. Time")
-        self.ui.dock_BS2 = Dock("Totals vs. Time")
-        self.ui.dock_BS3 = Dock("Asset Breakdown")        
+        self.ui.dock_BS1 = Dock("Balances vs. Time", autoOrientation=False)
+        self.ui.dock_BS2 = Dock("Totals vs. Time", autoOrientation=False)
+        self.ui.dock_BS3 = Dock("Asset Breakdown", autoOrientation=False)        
 
         self.ui.graphBS1 = pg.PlotWidget()
         self.ui.graphBS2 = pg.PlotWidget()
-        self.ui.graphBS3 = pg.PlotWidget()  
+        self.ui.graphBS3 = pg.PlotWidget() 
+
+        self.ui.graphBS1.setXLink(self.ui.graphBS2) 
 
         self.ui.dock_BS1.addWidget(self.ui.graphBS1) 
         self.ui.dock_BS2.addWidget(self.ui.graphBS2)
@@ -138,13 +140,15 @@ class MainWindow(QMainWindow):
         self.ui.BS_area.addDock(self.ui.dock_BS2, 'bottom')
         self.ui.BS_area.addDock(self.ui.dock_BS3, 'right')  
 
-        self.ui.dock_IE1 = Dock("Income and Expense vs. Time")
-        self.ui.dock_IE2 = Dock("Totals vs. Time")
-        self.ui.dock_IE3 = Dock("Expense Breakdown")  
+        self.ui.dock_IE1 = Dock("Income and Expense vs. Time", autoOrientation=False)
+        self.ui.dock_IE2 = Dock("Totals vs. Time", autoOrientation=False)
+        self.ui.dock_IE3 = Dock("Expense Breakdown", autoOrientation=False)  
 
         self.ui.graphIE1 = pg.PlotWidget()
         self.ui.graphIE2 = pg.PlotWidget()
         self.ui.graphIE3 = pg.PlotWidget()  
+
+        self.ui.graphIE1.setXLink(self.ui.graphIE2)         
 
         self.ui.dock_IE1.addWidget(self.ui.graphIE1) 
         self.ui.dock_IE2.addWidget(self.ui.graphIE2)
@@ -154,6 +158,7 @@ class MainWindow(QMainWindow):
         self.ui.IE_area.addDock(self.ui.dock_IE2, 'bottom')
         self.ui.IE_area.addDock(self.ui.dock_IE3, 'right')   
 
+        # pg.setConfigOptions(antialias=True)  # Enable smooth lines globally
         plotting.init(self)        
 
         #Callbacks
