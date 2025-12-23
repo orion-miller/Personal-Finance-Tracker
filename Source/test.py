@@ -304,25 +304,6 @@ from PySide6.QtWidgets import (
 # pg.exec()
 
 
-import sys
-import numpy as np
-import pyqtgraph as pg
-from PySide6.QtWidgets import QApplication
+import pyqtgraph.examples
+pyqtgraph.examples.run()
 
-app = QApplication(sys.argv)
-
-plot = pg.PlotWidget()
-plot.setWindowTitle("Text Labels with setTicks() only")
-
-categories = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-y = np.random.normal(10, 3, len(categories))
-
-x = np.arange(len(categories))
-plot.plot(x, y, pen=None, symbol='o', symbolSize=10, symbolBrush='b')
-
-# The key part — just one line!
-ticks = [(i, label) for i, label in enumerate(categories)]
-plot.getAxis('bottom').setTicks([ticks])
-
-plot.show()
-sys.exit(app.exec())

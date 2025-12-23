@@ -20,6 +20,7 @@ from PySide6.QtGui import QIcon
 from mainwindow import Ui_OrionsApp
 import PySide6
 import pyqtgraph as pg
+from pyqtgraph.dockarea import DockArea, Dock
 
 #other modules
 import pandas as pd
@@ -84,8 +85,6 @@ class MainWindow(QMainWindow):
         except:
             pass
 
-        plotting.init(self)
-
         #Set initial component properties
         self.setWindowTitle(f"Finance Tracker {self.ps.APP_VERSION}")
 
@@ -122,6 +121,42 @@ class MainWindow(QMainWindow):
             QStatusBar { border: none; }
         """)
 
+        #Add figure docks
+        self.ui.dock_BS1 = Dock("Balances vs. Time")
+        self.ui.dock_BS2 = Dock("Totals vs. Time")
+        self.ui.dock_BS3 = Dock("Asset Breakdown")        
+
+        self.ui.graphBS1 = pg.PlotWidget()
+        self.ui.graphBS2 = pg.PlotWidget()
+        self.ui.graphBS3 = pg.PlotWidget()  
+
+        self.ui.dock_BS1.addWidget(self.ui.graphBS1) 
+        self.ui.dock_BS2.addWidget(self.ui.graphBS2)
+        self.ui.dock_BS3.addWidget(self.ui.graphBS3)        
+
+        self.ui.BS_area.addDock(self.ui.dock_BS1, 'top')
+        self.ui.BS_area.addDock(self.ui.dock_BS2, 'bottom')
+        self.ui.BS_area.addDock(self.ui.dock_BS3, 'right')  
+
+        self.ui.dock_IE1 = Dock("Income and Expense vs. Time")
+        self.ui.dock_IE2 = Dock("Totals vs. Time")
+        self.ui.dock_IE3 = Dock("Expense Breakdown")  
+
+        self.ui.graphIE1 = pg.PlotWidget()
+        self.ui.graphIE2 = pg.PlotWidget()
+        self.ui.graphIE3 = pg.PlotWidget()  
+
+        self.ui.dock_IE1.addWidget(self.ui.graphIE1) 
+        self.ui.dock_IE2.addWidget(self.ui.graphIE2)
+        self.ui.dock_IE3.addWidget(self.ui.graphIE3)               
+
+        self.ui.IE_area.addDock(self.ui.dock_IE1, 'top')
+        self.ui.IE_area.addDock(self.ui.dock_IE2, 'bottom')
+        self.ui.IE_area.addDock(self.ui.dock_IE3, 'right')   
+
+        plotting.init(self)        
+
+        #Callbacks
         MainWindow.year_changed(self)
         MainWindow.month_changed(self)        
 
@@ -146,6 +181,8 @@ class MainWindow(QMainWindow):
         self.ui.pushButton_add_row.clicked.connect(self.add_bs_row)
         self.ui.pushButton_copy_previous.clicked.connect(self.bs_copy_previous)        
         self.ui.pushButton_saveBS.clicked.connect(self.save_bs_month)
+
+        self.ui.graphBS1.scene().sigMouseClicked.connect(self.change_plot_focus)
 
     #----------------------------------------------------------
     def pick_folder(self):
@@ -310,7 +347,7 @@ class MainWindow(QMainWindow):
 
             if "Type" in df.columns:
                 col_idx = df.columns.get_loc("Type")
-                delegate = ComboBoxDelegate(self.ps.expense_types, self.ui.sheetTable)
+                delegate = ComboBoxDelegate(self.ps.income_expense_types, self.ui.sheetTable)
                 self.ui.sheetTable.setItemDelegateForColumn(col_idx, delegate)    
 
             #clear dropdown
@@ -456,6 +493,18 @@ class MainWindow(QMainWindow):
         else:
             plotting.refresh(self)           
             status.msg.show(self, "Plots refreshed")      
+    #----------------------------------------------------------
+    def change_plot_focus(self, event): 
+        #unused       
+        if event.double():
+            if self.isFullScreen():
+                # self.showNormal()
+                self.ui.tabWidget.setCentralWidget(self.ui.graphBS1)
+            else:
+                # self.showFullScreen()  # True full screen (no title bar)
+                # Or self.showMaximized() for maximized window
+                pass
+
     #----------------------------------------------------------
 
 class TableModel(QAbstractTableModel):

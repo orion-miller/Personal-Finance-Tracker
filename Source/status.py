@@ -33,6 +33,11 @@ class prog:
         #configures status bar to show progress bar and message
 
         if action == 'construct':
+            # Check for and cancel any running messages first
+            if hasattr(main_obj, "_fade_anim"):
+                main_obj._fade_anim.stop()
+                msg.clear_fading_components(main_obj)
+
             # Create progress bar, add it to the status bar
             main_obj.ui.progress = QProgressBar()
             main_obj.ui.progress.setMaximumWidth(75)  

@@ -7,42 +7,42 @@ def init(self):
 
     plot = self.ui.graphBS1            
     plot.showGrid(x=True, y=True)
-    plot.setTitle("Balances vs. Time")
+    # plot.setTitle("Balances vs. Time")
     plot.setLabel('left', 'Amount (USD)')
     plot.setLabel('bottom', 'Time (Year-Month)')
     plot.addLegend(offset=(2, 2))
 
     plot = self.ui.graphBS2            
     plot.showGrid(x=True, y=True)
-    plot.setTitle("Totals vs. Time")
+    # plot.setTitle("Totals vs. Time")
     plot.setLabel('left', 'Amount (USD)')
     plot.setLabel('bottom', 'Time (Year-Month)')
     plot.addLegend(offset=(2, 2))    
 
     plot = self.ui.graphBS3           
     plot.showGrid(x=True, y=True)
-    plot.setTitle("Asset Breakdown")
+    # plot.setTitle("Asset Breakdown")
     plot.setLabel('left', 'Amount (USD)')
     plot.setLabel('bottom', 'Asset')
     plot.addLegend(offset=(2, 2))     
 
     plot = self.ui.graphIE1             
     plot.showGrid(x=True, y=True)
-    plot.setTitle("Income and Expense vs. Time")
+    # plot.setTitle("Income and Expense vs. Time")
     plot.setLabel('left', 'Amount (USD)')
     plot.setLabel('bottom', 'Time (Year-Month)')
     plot.addLegend(offset=(2, 2)) 
 
     plot = self.ui.graphIE2            
     plot.showGrid(x=True, y=True)
-    plot.setTitle("Totals vs. Time")
+    # plot.setTitle("Totals vs. Time")
     plot.setLabel('left', 'Amount (USD)')
     plot.setLabel('bottom', 'Time (Year-Month)')
     plot.addLegend(offset=(2, 2)) 
 
     plot = self.ui.graphIE3   
     plot.showGrid(x=True, y=True)
-    plot.setTitle("Expense Breakdown")
+    # plot.setTitle("Expense Breakdown")
     plot.setLabel('left', 'Amount (USD)')
     plot.setLabel('bottom', 'Category')
     plot.addLegend(offset=(2, 2)) 
