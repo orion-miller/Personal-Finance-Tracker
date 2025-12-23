@@ -46,33 +46,13 @@
      <attribute name="title">
       <string>Tab 1</string>
      </attribute>
-     <widget class="PlotWidget" name="graphBS1" native="true">
+     <widget class="DockArea" name="BS_area" native="true">
       <property name="geometry">
        <rect>
-        <x>10</x>
-        <y>10</y>
-        <width>641</width>
-        <height>341</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="PlotWidget" name="graphBS2" native="true">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>360</y>
-        <width>641</width>
-        <height>341</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="PlotWidget" name="graphBS3" native="true">
-      <property name="geometry">
-       <rect>
-        <x>660</x>
-        <y>10</y>
-        <width>451</width>
-        <height>691</height>
+        <x>0</x>
+        <y>0</y>
+        <width>1111</width>
+        <height>701</height>
        </rect>
       </property>
      </widget>
@@ -81,33 +61,13 @@
      <attribute name="title">
       <string>Tab 2</string>
      </attribute>
-     <widget class="PlotWidget" name="graphIE3" native="true">
+     <widget class="DockArea" name="IE_area" native="true">
       <property name="geometry">
        <rect>
-        <x>660</x>
-        <y>10</y>
-        <width>451</width>
-        <height>691</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="PlotWidget" name="graphIE1" native="true">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>10</y>
-        <width>641</width>
-        <height>341</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="PlotWidget" name="graphIE2" native="true">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>360</y>
-        <width>641</width>
-        <height>341</height>
+        <x>0</x>
+        <y>0</y>
+        <width>1111</width>
+        <height>701</height>
        </rect>
       </property>
      </widget>
@@ -539,9 +499,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>PlotWidget</class>
+   <class>DockArea</class>
    <extends>QWidget</extends>
-   <header>pyqtgraph</header>
+   <header>pyqtgraph.dockarea</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

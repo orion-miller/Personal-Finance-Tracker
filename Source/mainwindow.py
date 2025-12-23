@@ -21,7 +21,7 @@ from PySide6.QtWidgets import (QApplication, QComboBox, QGroupBox, QHeaderView,
     QPushButton, QSizePolicy, QStatusBar, QTabWidget,
     QTableView, QTextEdit, QWidget)
 
-from pyqtgraph import PlotWidget
+from pyqtgraph.dockarea import DockArea
 
 class Ui_OrionsApp(object):
     def setupUi(self, OrionsApp):
@@ -47,27 +47,15 @@ class Ui_OrionsApp(object):
         self.tab = QWidget()
         self.tab.setObjectName(u"tab")
         self.tab.setToolTipDuration(2)
-        self.graphBS1 = PlotWidget(self.tab)
-        self.graphBS1.setObjectName(u"graphBS1")
-        self.graphBS1.setGeometry(QRect(10, 10, 641, 341))
-        self.graphBS2 = PlotWidget(self.tab)
-        self.graphBS2.setObjectName(u"graphBS2")
-        self.graphBS2.setGeometry(QRect(10, 360, 641, 341))
-        self.graphBS3 = PlotWidget(self.tab)
-        self.graphBS3.setObjectName(u"graphBS3")
-        self.graphBS3.setGeometry(QRect(660, 10, 451, 691))
+        self.BS_area = DockArea(self.tab)
+        self.BS_area.setObjectName(u"BS_area")
+        self.BS_area.setGeometry(QRect(0, 0, 1111, 701))
         self.tabWidget.addTab(self.tab, "")
         self.tab_2 = QWidget()
         self.tab_2.setObjectName(u"tab_2")
-        self.graphIE3 = PlotWidget(self.tab_2)
-        self.graphIE3.setObjectName(u"graphIE3")
-        self.graphIE3.setGeometry(QRect(660, 10, 451, 691))
-        self.graphIE1 = PlotWidget(self.tab_2)
-        self.graphIE1.setObjectName(u"graphIE1")
-        self.graphIE1.setGeometry(QRect(10, 10, 641, 341))
-        self.graphIE2 = PlotWidget(self.tab_2)
-        self.graphIE2.setObjectName(u"graphIE2")
-        self.graphIE2.setGeometry(QRect(10, 360, 641, 341))
+        self.IE_area = DockArea(self.tab_2)
+        self.IE_area.setObjectName(u"IE_area")
+        self.IE_area.setGeometry(QRect(0, 0, 1111, 701))
         self.tabWidget.addTab(self.tab_2, "")
         self.tabWidget_2 = QTabWidget(self.centralwidget)
         self.tabWidget_2.setObjectName(u"tabWidget_2")
@@ -90,7 +78,7 @@ class Ui_OrionsApp(object):
         font = QFont()
         font.setPointSize(8)
         self.pushButton_copy_previous.setFont(font)
-        self.pushButton_copy_previous.setToolTipDuration(5)
+        self.pushButton_copy_previous.setToolTipDuration(-1)
         self.tabWidget_2.addTab(self.tab_3, "")
         self.tab_4 = QWidget()
         self.tab_4.setObjectName(u"tab_4")

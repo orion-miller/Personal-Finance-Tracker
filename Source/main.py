@@ -20,6 +20,7 @@ from PySide6.QtGui import QIcon
 from mainwindow import Ui_OrionsApp
 import PySide6
 import pyqtgraph as pg
+from pyqtgraph.dockarea import DockArea, Dock
 
 #other modules
 import pandas as pd
@@ -30,7 +31,6 @@ import ollama
 import plotting
 import utils
 import status
-from win_tb import WinTB
 
 #COMPILATION CMD:
 # pyside6-uic mainwindow.ui -o mainwindow.py
@@ -85,8 +85,6 @@ class MainWindow(QMainWindow):
         except:
             pass
 
-        plotting.init(self)
-
         #Set initial component properties
         self.setWindowTitle(f"Finance Tracker {self.ps.APP_VERSION}")
 
@@ -123,6 +121,47 @@ class MainWindow(QMainWindow):
             QStatusBar { border: none; }
         """)
 
+        #Add figure docks
+        self.ui.dock_BS1 = Dock("Balances vs. Time", autoOrientation=False)
+        self.ui.dock_BS2 = Dock("Totals vs. Time", autoOrientation=False)
+        self.ui.dock_BS3 = Dock("Asset Breakdown", autoOrientation=False)        
+
+        self.ui.graphBS1 = pg.PlotWidget()
+        self.ui.graphBS2 = pg.PlotWidget()
+        self.ui.graphBS3 = pg.PlotWidget() 
+
+        self.ui.graphBS1.setXLink(self.ui.graphBS2) 
+
+        self.ui.dock_BS1.addWidget(self.ui.graphBS1) 
+        self.ui.dock_BS2.addWidget(self.ui.graphBS2)
+        self.ui.dock_BS3.addWidget(self.ui.graphBS3)        
+
+        self.ui.BS_area.addDock(self.ui.dock_BS1, 'top')
+        self.ui.BS_area.addDock(self.ui.dock_BS2, 'bottom')
+        self.ui.BS_area.addDock(self.ui.dock_BS3, 'right')  
+
+        self.ui.dock_IE1 = Dock("Income and Expense vs. Time", autoOrientation=False)
+        self.ui.dock_IE2 = Dock("Totals vs. Time", autoOrientation=False)
+        self.ui.dock_IE3 = Dock("Expense Breakdown", autoOrientation=False)  
+
+        self.ui.graphIE1 = pg.PlotWidget()
+        self.ui.graphIE2 = pg.PlotWidget()
+        self.ui.graphIE3 = pg.PlotWidget()  
+
+        self.ui.graphIE1.setXLink(self.ui.graphIE2)         
+
+        self.ui.dock_IE1.addWidget(self.ui.graphIE1) 
+        self.ui.dock_IE2.addWidget(self.ui.graphIE2)
+        self.ui.dock_IE3.addWidget(self.ui.graphIE3)               
+
+        self.ui.IE_area.addDock(self.ui.dock_IE1, 'top')
+        self.ui.IE_area.addDock(self.ui.dock_IE2, 'bottom')
+        self.ui.IE_area.addDock(self.ui.dock_IE3, 'right')   
+
+        # pg.setConfigOptions(antialias=True)  # Enable smooth lines globally
+        plotting.init(self)        
+
+        #Callbacks
         MainWindow.year_changed(self)
         MainWindow.month_changed(self)        
 
@@ -148,37 +187,7 @@ class MainWindow(QMainWindow):
         self.ui.pushButton_copy_previous.clicked.connect(self.bs_copy_previous)        
         self.ui.pushButton_saveBS.clicked.connect(self.save_bs_month)
 
-    #----------------------------------------------------------
-    def config_status_prog(self, action: str):
-        #configures status bar to show progress bar and message
-
-        if action == 'construct':
-            # Create progress bar, add it to the status bar
-            self.ui.progress = QProgressBar()
-            self.ui.progress.setMaximumWidth(75)  
-            self.ui.progress.setAlignment(Qt.AlignCenter)    
-            self.ui.progress.setRange(0, 100)         
-            self.ui.statusbar.addWidget(self.ui.progress)  
-
-            # Create a permanent label inside the status bar (invisible at first)
-            self.ui.status_label = QLabel("")
-            self.ui.status_label.setMinimumWidth(400)   
-            self.ui.statusbar.addWidget(self.ui.status_label)                   
-
-            #extra spacer to push prior items to left
-            self.ui.status_spacer = QWidget()    
-            self.ui.statusbar.addWidget(self.ui.status_spacer, stretch=1) 
-
-        elif action == 'destruct':
-            # Remove progress bar and label from status bar
-            self.ui.statusbar.removeWidget(self.ui.progress)
-            self.ui.statusbar.removeWidget(self.ui.status_label)
-            self.ui.statusbar.removeWidget(self.ui.status_spacer)
-
-            # Delete references
-            # del self.ui.progress
-            # del self.ui.status_label
-            # del self.ui.status_spacer
+        self.ui.graphBS1.scene().sigMouseClicked.connect(self.change_plot_focus)
 
     #----------------------------------------------------------
     def pick_folder(self):
@@ -190,7 +199,7 @@ class MainWindow(QMainWindow):
 
         if folder:                                         # user clicked OK (not Cancel)
             self.ps.data_folder = folder 
-            self.show_fading_message(f"Workspace directory set: {folder}")                           
+            status.msg.show(self, f"Workspace directory set: {folder}", "green")                           
     #----------------------------------------------------------
     def show_info(self):
         QMessageBox.information(
@@ -232,7 +241,7 @@ class MainWindow(QMainWindow):
 
         self.ps.db[self.ps.year_sel][self.ps.month_sel]["bs"] = self.ps.db[year_prev][month_prev]["bs"].copy()
 
-        self.show_fading_message("Previous month copied") 
+        status.msg.show(self, "Previous month copied") 
 
         #may need to call load month here
 
@@ -257,16 +266,16 @@ class MainWindow(QMainWindow):
             BSheader.setSectionResizeMode(0, QHeaderView.Stretch)  #"item" column stretches 
             self.ui.tableBS.setColumnWidth(1, 140)                 #fixed width      
 
-            self.show_fading_message("Balance sheet row added") 
+            status.msg.show(self, "Balance sheet row added")
         except:
-            self.show_fading_message("Error adding balance sheet row - ensure to load a month first")
+            status.msg.show(self, "Error adding balance sheet row - ensure to load a month first", "red")
     #----------------------------------------------------------
     def save_bs_month(self):  
         #save bs table data for month
        
         self.ps.db[self.ps.year_sel][self.ps.month_sel]["bs"] = self.ui.tableBS.model()._df.copy()
 
-        self.show_fading_message("Balance sheet table saved")     
+        status.msg.show(self, "Balance sheet table saved")            
     #----------------------------------------------------------
     def db_init(self):
         #cycle through years and months, populate basic db structure with blank entries
@@ -343,7 +352,7 @@ class MainWindow(QMainWindow):
 
             if "Type" in df.columns:
                 col_idx = df.columns.get_loc("Type")
-                delegate = ComboBoxDelegate(self.ps.expense_types, self.ui.sheetTable)
+                delegate = ComboBoxDelegate(self.ps.income_expense_types, self.ui.sheetTable)
                 self.ui.sheetTable.setItemDelegateForColumn(col_idx, delegate)    
 
             #clear dropdown
@@ -358,9 +367,8 @@ class MainWindow(QMainWindow):
             self.ui.sheetTable.setModel(TableModel(pd.DataFrame()))
             #clear dropdown
             self.ui.sheetDropdown.clear()
-
-        self.show_fading_message(f"{self.ps.month_sel} {self.ps.year_sel} data loaded")             
-
+             
+        status.msg.show(self, f"{self.ui.comboBox_month.currentText()} {self.ps.year_sel} data loaded") 
     #----------------------------------------------------------
     def save_month(self):
 
@@ -372,7 +380,7 @@ class MainWindow(QMainWindow):
         #write out to file
         np.savez_compressed(os.path.join(self.ps.data_folder,"db.npz"), db=self.ps.db)
 
-        self.show_fading_message(f"{self.ps.month_sel} {self.ps.year_sel} data saved")  
+        status.msg.show(self, f"{self.ui.comboBox_month.currentText()} {self.ps.year_sel} data saved")  
 
         # msg = QMessageBox(QMessageBox.NoIcon, "Month Saved Successfully", "")
         # msg.setIcon(QMessageBox.Information)
@@ -400,7 +408,7 @@ class MainWindow(QMainWindow):
 
             # self.setCentralWidget(self.ui.graphBS1)
 
-            self.show_fading_message(f"Sheet saved: {sheet_name}")  
+            status.msg.show(self, f"Sheet saved: {sheet_name}") 
     #----------------------------------------------------------
     def delete_csv(self):
         #delete entry from database
@@ -413,8 +421,8 @@ class MainWindow(QMainWindow):
 
             #remove entry from dropdown  
             self.ui.sheetDropdown.removeItem(self.ui.sheetDropdown.currentIndex())  
-
-            self.show_fading_message(f"Sheet deleted: {sheet_name}")               
+ 
+            status.msg.show(self, f"Sheet deleted: {sheet_name}")              
     #----------------------------------------------------------
     def load_csv(self):
         # File dialog with CSV filter
@@ -436,15 +444,11 @@ class MainWindow(QMainWindow):
         df.drop(df.columns[[2,3]], axis=1, inplace=True)
         df.insert(2, "Type", "-")
 
-        self.config_status_prog('construct') #create progress elements in status bar
-        tb = WinTB(self.winId())              
-        WinTB.set_state(tb, "normal")
+        TB = status.prog(self)
         
         for i in range(len(df)):
             prog_value = int(100*(i+1)/len(df))
-            self.ui.progress.setValue(prog_value)
-            self.ui.status_label.setText("Processing expenses")  
-            WinTB.set_val(tb, prog_value) 
+            status.prog.update_val(TB, self, "Processing expenses", prog_value)
 
             # assign initial categorizations of items using ollama
             if df['Amount'][i] > 0:
@@ -463,8 +467,7 @@ class MainWindow(QMainWindow):
             if response_isolated in self.ps.expense_types:
                 df['Type'].loc[i] = response_isolated                                   
 
-        self.config_status_prog('destruct') #remove progress elements in status bar
-        WinTB.set_state(tb, "normal")        
+        status.prog.close(TB, self)      
 
         # Show in table
         model = TableModel(df)
@@ -488,55 +491,26 @@ class MainWindow(QMainWindow):
     #----------------------------------------------------------
     def refresh_plots(self):   
         #check that the time range selected on the dropdowns is valid - end date must be after start date
-        if (self.ui.comboBox_year_3.currentIndex() > self.ui.comboBox_year_2.currentIndex()):
-            self.show_fading_message("Specified time range for plotting is invalid")    
-            #should add to this to account for months within the same year being misaligned         
+        if (self.ui.comboBox_year_3.currentIndex() < self.ui.comboBox_year_2.currentIndex()):
+            status.msg.show(self, "Specified time range for plotting is invalid", "red") 
+        elif (self.ui.comboBox_year_3.currentIndex() == self.ui.comboBox_year_2.currentIndex()) and (self.ui.comboBox_month_3.currentIndex() < self.ui.comboBox_month_2.currentIndex()):             
+            status.msg.show(self, "Specified time range for plotting is invalid", "red")        
         else:
-            plotting.refresh(self)      
-            self.show_fading_message("Plots refreshed")           
+            plotting.refresh(self)           
+            status.msg.show(self, "Plots refreshed")      
     #----------------------------------------------------------
-    def show_fading_message(self, text, duration=4000):
-        """Show message and then fade it out"""
+    def change_plot_focus(self, event): 
+        #unused       
+        if event.double():
+            if self.isFullScreen():
+                # self.showNormal()
+                self.ui.tabWidget.setCentralWidget(self.ui.graphBS1)
+            else:
+                # self.showFullScreen()  # True full screen (no title bar)
+                # Or self.showMaximized() for maximized window
+                pass
 
-        # Cancel any running animation first
-        if hasattr(self, "_fade_anim"):
-            self._fade_anim.stop()
-            self.clear_fading_components()
-
-        #Create components
-        # Create a label inside the status bar
-        self.ui.status_label = QLabel("")
-        self.ui.status_label.setMinimumWidth(400)   
-        self.ui.statusbar.addWidget(self.ui.status_label)                   
-
-        #extra spacer to push prior items to left
-        self.ui.status_spacer = QWidget()    
-        self.ui.statusbar.addWidget(self.ui.status_spacer, stretch=1)             
-
-        # Fade in instantly, stay, then fade out
-        self.effect = QGraphicsOpacityEffect()     
-        self.ui.status_label.setGraphicsEffect(self.effect)
-
-        self._fade_anim = QPropertyAnimation(self.ui.status_label.graphicsEffect(), b"opacity")
-        self._fade_anim.setDuration(duration)
-        self._fade_anim.setEasingCurve(QEasingCurve.InCubic)        
-        self._fade_anim.setStartValue(1)          
-        self._fade_anim.setEndValue(0)        
-
-        #Create fading text
-        self.ui.status_label.setText(text)        
-        self._fade_anim.start()    
-
-        self._fade_anim.finished.connect(lambda: self.clear_fading_components())
-
-    def clear_fading_components(self):
-        # Remove progress bar and label from status bar
-        self.ui.statusbar.removeWidget(self.ui.status_label)
-        self.ui.statusbar.removeWidget(self.ui.status_spacer)
-
-        # Delete references
-        # del self.ui.status_label
-        # del self.ui.status_spacer
+    #----------------------------------------------------------
 
 class TableModel(QAbstractTableModel):
     def __init__(self, df=pd.DataFrame()):
@@ -560,7 +534,7 @@ class TableModel(QAbstractTableModel):
                     self._df.iat[index.row(), index.column()] = float(value)
                 except: #make value zero if number wasnt entered
                     self._df.iat[index.row(), index.column()] = float(0.00)  
-                    # MainWindow.show_fading_message("Invalid amount entered in cell, set to 0.00 instead")                  
+                    status.msg.show(self, "Invalid amount entered in cell, set to 0.00 instead", "yellow")                                       
             else:
                 self._df.iat[index.row(), index.column()] = value                
             self.dataChanged.emit(index, index, [Qt.EditRole])
