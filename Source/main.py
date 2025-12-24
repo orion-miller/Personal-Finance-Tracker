@@ -398,8 +398,9 @@ class MainWindow(QMainWindow):
         self.ps.month_p2 = str(self.ui.comboBox_month_3.currentIndex() + 1)  
     #----------------------------------------------------------
     def changed_csv(self):
-        sheet = self.ps.db[self.ps.year_sel][self.ps.month_sel]["ie"][self.ui.sheetDropdown.currentText()]
-        self.ui.sheetTable.setModel(TableModel(sheet))                                 
+        if self.ui.sheetDropdown.count() > 0:
+            sheet = self.ps.db[self.ps.year_sel][self.ps.month_sel]["ie"][self.ui.sheetDropdown.currentText()]
+            self.ui.sheetTable.setModel(TableModel(sheet))                                 
     #----------------------------------------------------------
     def save_csv(self):
         if self.ui.sheetDropdown.count() > 0:
