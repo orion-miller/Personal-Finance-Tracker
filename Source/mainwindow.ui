@@ -8,7 +8,7 @@
     <x>0</x>
     <y>0</y>
     <width>1540</width>
-    <height>800</height>
+    <height>833</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -475,6 +475,17 @@
    <property name="autoFillBackground">
     <bool>false</bool>
    </property>
+  </widget>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
   </widget>
   <action name="actionOpen">
    <property name="text">

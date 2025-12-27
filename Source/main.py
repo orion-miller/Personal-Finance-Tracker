@@ -16,7 +16,7 @@ from PySide6.QtCore import (
     Qt, QAbstractTableModel, QTimer, QModelIndex,
     QPropertyAnimation, QEasingCurve
 )
-from PySide6.QtGui import QIcon
+from PySide6.QtGui import QIcon, QAction
 from mainwindow import Ui_OrionsApp
 import PySide6
 import pyqtgraph as pg
@@ -28,9 +28,8 @@ import numpy as np
 import ollama 
 
 #external fcns
-import plotting
-import utils
-import status
+from utils.ui_models import TableModel, ComboBoxDelegate
+from utils import plotting, status, calc_metrics
 
 #COMPILATION CMD:
 # pyside6-uic mainwindow.ui -o mainwindow.py
@@ -116,10 +115,40 @@ class MainWindow(QMainWindow):
         self.ui.tableBS.setShowGrid(False)        
         self.ui.sheetTable.setShowGrid(False)     
 
+        # self.menuBar().setStyleSheet("""
+        #     QMenuBar {
+        #         padding: 4px 10px;
+        #         spacing: 10px;
+        #         min-height: 38px;          /* ← your desired height */
+        #         max-height: 38px;          /* optional - force exact height */
+        #     }
+
+        #     QMenuBar::item {
+        #         padding: 4px 12px;
+        #         margin: 0px 3px;
+        #     }
+        # """)
+
         self.statusBar().setStyleSheet("""
             QStatusBar::item { border: none; }
             QStatusBar { border: none; }
         """)
+
+        #toolbar setup
+        # self.ui.toolbar = self.addToolBar("Main Toolbar") #already added through designer
+        self.ui.toolBar.setMovable(False)
+        self.ui.toolBar.setFloatable(False)
+        self.ui.toolBar.setIconSize(PySide6.QtCore.QSize(18, 18))
+
+        # self.ui.toolBar.addSeparator()
+        self.add_toolbar_space(405)
+
+        self.ui.act_data_cursor = QAction(QIcon("assets/add_2_24dp_8B7DBE_FILL0_wght400_GRAD0_opsz24.svg"), "Data Cursor", self)
+        self.ui.act_data_cursor.setShortcut("Ctrl+D")
+        self.ui.act_data_cursor.setCheckable(True)
+        self.ui.act_data_cursor.setChecked(False)
+        self.ui.toolBar.addAction(self.ui.act_data_cursor)
+        self.ui.act_data_cursor.toggled.connect(self.data_cursor_switch)
 
         #Add figure docks
         self.ui.dock_BS1 = Dock("Balances vs. Time", autoOrientation=False)
@@ -158,8 +187,18 @@ class MainWindow(QMainWindow):
         self.ui.IE_area.addDock(self.ui.dock_IE2, 'bottom')
         self.ui.IE_area.addDock(self.ui.dock_IE3, 'right')   
 
-        # pg.setConfigOptions(antialias=True)  # Enable smooth lines globally
-        plotting.init(self)        
+        pg.setConfigOptions(
+            antialias=True,
+            # defaultPen=pg.mkPen(width=2)
+            )  # Enable smooth lines globally
+        plotting.init(self)             
+
+        # === Plot Mouse tracking ===
+        self.proxy = pg.SignalProxy(
+            self.ui.graphBS1.scene().sigMouseMoved,
+            rateLimit=60,           # max 60 updates/sec — smooth but not CPU killer
+            slot=self.data_cursor_moved
+        )          
 
         #Callbacks
         MainWindow.year_changed(self)
@@ -207,6 +246,56 @@ class MainWindow(QMainWindow):
             "About",
             f"Finance Tracker\nVersion: {self.ps.APP_VERSION}\n\nContact: orion.miller@outlook.com"
         )
+    #----------------------------------------------------------
+    def add_toolbar_space(self, width: int):
+        spacer = QWidget()
+        spacer.setFixedWidth(width)
+        self.ui.toolBar.addWidget(spacer)
+    #----------------------------------------------------------
+    def data_cursor_switch(self):
+        if self.ui.act_data_cursor.isChecked():
+            self.ui.BS_area.setCursor(Qt.CursorShape.CrossCursor)   
+            self.ui.IE_area.setCursor(Qt.CursorShape.CrossCursor) 
+
+            self.ui.data_label = pg.TextItem(
+                text="",
+                color=(255, 255, 255),
+                anchor=(0, 1),          # top-left corner of text
+                border=pg.mkPen('yellow', width=1),
+                fill=(0, 0, 0, 180)     # semi-transparent black background
+            )
+            self.ui.graphBS1.addItem(self.ui.data_label, ignoreBounds=True)
+
+        else:
+            self.ui.BS_area.setCursor(Qt.CursorShape.ArrowCursor)   
+            self.ui.IE_area.setCursor(Qt.CursorShape.ArrowCursor) 
+    #----------------------------------------------------------
+    def data_cursor_moved(self, event):
+        pos = event[0]  # position in scene coordinates
+
+        # Check if mouse is inside plot area
+        if self.ui.graphBS1.sceneBoundingRect().contains(pos):
+            mouse_point = self.ui.graphBS1.plotItem.vb.mapSceneToView(pos)
+            x, y = mouse_point.x(), mouse_point.y()
+
+            # # Update crosshair
+            # self.vline.setPos(x)
+            # self.hline.setPos(y)
+
+            # Update coordinate label (positioned slightly above & right of cursor)
+            self.ui.data_label.setText(f"x: {x:.3f}\ny: {y:.3f}")
+            self.ui.data_label.setPos(x + 0.1, y + 0.3)  # small offset — adjust as needed
+
+            # Show everything
+            # self.vline.show()
+            # self.hline.show()
+            self.ui.data_label.show()
+        else:
+            # Hide when mouse leaves plot area
+            # self.vline.hide()
+            # self.hline.hide()
+            self.ui.data_label.hide()           
+
     #----------------------------------------------------------
     def on_tab_changed(self, index):
         tab_name = self.ui.tabWidget.tabText(index)
@@ -299,7 +388,7 @@ class MainWindow(QMainWindow):
                         }   
 
                     #calculate metrics
-                    utils.calc_metrics(self, year, str(iM+1))        
+                    calc_metrics(self, year, str(iM+1))        
              
     #----------------------------------------------------------
     def load_month(self):
@@ -375,7 +464,7 @@ class MainWindow(QMainWindow):
         self.ps.db[self.ps.year_sel][self.ps.month_sel]["notes"] = self.ui.textEdit.toPlainText() 
 
         #calculate metrics
-        utils.calc_metrics(self, self.ps.year_sel, self.ps.month_sel)
+        calc_metrics(self, self.ps.year_sel, self.ps.month_sel)
 
         #write out to file
         np.savez_compressed(os.path.join(self.ps.data_folder,"db.npz"), db=self.ps.db)
@@ -510,68 +599,7 @@ class MainWindow(QMainWindow):
                 # self.showFullScreen()  # True full screen (no title bar)
                 # Or self.showMaximized() for maximized window
                 pass
-
     #----------------------------------------------------------
-
-class TableModel(QAbstractTableModel):
-    def __init__(self, df=pd.DataFrame()):
-        super().__init__()
-        self._df = df.copy()
-
-    def rowCount(self, parent=QModelIndex()): return len(self._df)
-    def columnCount(self, parent=QModelIndex()): return len(self._df.columns)
-
-    def data(self, index, role=Qt.DisplayRole):
-        if not index.isValid(): return None
-        if role == Qt.DisplayRole or role == Qt.EditRole:
-            value = self._df.iat[index.row(), index.column()]
-            return "" if pd.isna(value) else str(value)
-        return None
-
-    def setData(self, index, value, role=Qt.EditRole):
-        if index.isValid() and role == Qt.EditRole:
-            if self._df.keys()[index.column()] == "Amount":
-                try: #convert entry to float if its an amount for either table
-                    self._df.iat[index.row(), index.column()] = float(value)
-                except: #make value zero if number wasnt entered
-                    self._df.iat[index.row(), index.column()] = float(0.00)  
-                    status.msg.show(self, "Invalid amount entered in cell, set to 0.00 instead", "yellow")                                       
-            else:
-                self._df.iat[index.row(), index.column()] = value                
-            self.dataChanged.emit(index, index, [Qt.EditRole])
-            return True
-        return False
-
-    def headerData(self, section, orientation, role=Qt.DisplayRole):
-        if role != Qt.DisplayRole: return None
-        if orientation == Qt.Horizontal:
-            return str(self._df.columns[section])
-        return str(self._df.index[section])
-
-    def flags(self, index):
-        return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable
-
-class ComboBoxDelegate(QStyledItemDelegate):
-    def __init__(self, options, parent=None):
-        super().__init__(parent)
-        self.options = options  # list of strings, e.g. ["Red", "Green", "Blue"]
-
-    def createEditor(self, parent, option, index):
-        combo = QComboBox(parent)
-        combo.addItems(self.options)
-        combo.setEditable(False)  # optional: prevent typing
-        return combo
-
-    def setEditorData(self, editor: QComboBox, index):
-        value = index.model().data(index, Qt.EditRole)
-        if value:
-            editor.setCurrentText(str(value))
-
-    def setModelData(self, editor: QComboBox, model, index):
-        model.setData(index, editor.currentText(), Qt.EditRole)
-
-    def updateEditorGeometry(self, editor, option, index):
-        editor.setGeometry(option.rect)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
@@ -587,6 +615,11 @@ if __name__ == "__main__":
 
     app.setWindowIcon(QIcon("assets/finance_mode_24dp_75FB4C_FILL0_wght400_GRAD0_opsz24.ico"))
     # app.setStyle("Fusion")
+
+    #import stylesheet and apply
+    with open("styling//mainstyle.qss", "r") as f:
+        _style = f.read()
+        app.setStyleSheet(_style)    
 
     window = MainWindow()
     window.setFixedSize(1540, 800)

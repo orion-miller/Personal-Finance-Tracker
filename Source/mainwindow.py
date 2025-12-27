@@ -19,7 +19,7 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
 from PySide6.QtWidgets import (QApplication, QComboBox, QGroupBox, QHeaderView,
     QLabel, QMainWindow, QMenu, QMenuBar,
     QPushButton, QSizePolicy, QStatusBar, QTabWidget,
-    QTableView, QTextEdit, QWidget)
+    QTableView, QTextEdit, QToolBar, QWidget)
 
 from pyqtgraph.dockarea import DockArea
 
@@ -27,7 +27,7 @@ class Ui_OrionsApp(object):
     def setupUi(self, OrionsApp):
         if not OrionsApp.objectName():
             OrionsApp.setObjectName(u"OrionsApp")
-        OrionsApp.resize(1540, 800)
+        OrionsApp.resize(1540, 833)
         OrionsApp.setTabShape(QTabWidget.TabShape.Triangular)
         self.actionOpen = QAction(OrionsApp)
         self.actionOpen.setObjectName(u"actionOpen")
@@ -168,6 +168,9 @@ class Ui_OrionsApp(object):
         self.statusbar.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
         self.statusbar.setAutoFillBackground(False)
         OrionsApp.setStatusBar(self.statusbar)
+        self.toolBar = QToolBar(OrionsApp)
+        self.toolBar.setObjectName(u"toolBar")
+        OrionsApp.addToolBar(Qt.ToolBarArea.TopToolBarArea, self.toolBar)
 
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuHelp.menuAction())
@@ -221,5 +224,6 @@ class Ui_OrionsApp(object):
         self.comboBox_year_3.setPlaceholderText(QCoreApplication.translate("OrionsApp", u"Year", None))
         self.menuFile.setTitle(QCoreApplication.translate("OrionsApp", u"File", None))
         self.menuHelp.setTitle(QCoreApplication.translate("OrionsApp", u"Help", None))
+        self.toolBar.setWindowTitle(QCoreApplication.translate("OrionsApp", u"toolBar", None))
     # retranslateUi
 
