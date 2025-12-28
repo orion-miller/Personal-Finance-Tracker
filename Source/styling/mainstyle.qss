@@ -1,4 +1,24 @@
 
-QLabel {
-    background-color: red;
+QMenuBar::item {
+    padding: 4px 10px;
+    margin: 0px 2px;
 }
+
+QMenuBar::item:selected,
+QMenuBar::item:hover {         
+    padding: 4px 10px; 
+    margin: 0px 2px;        
+}
+
+QToolBar QToolButton:checked,
+QToolBar QToolButton:pressed {         
+    background-color: #6acf78;       
+}
+
+QStatusBar { 
+    border: none; 
+}
+QStatusBar::item { 
+    border: none; 
+}
+

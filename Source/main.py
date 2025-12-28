@@ -37,9 +37,10 @@ from utils import plotting, status, calc_metrics
 class Properties:
     def __init__(self):
         self.APP_VERSION = "1.0"
+        self.APP_NAME = "Finance Tracker"        
         self.data_folder = "D:\\!Orion_Documents\\Financial\\!OM_Finance_Tracker" 
-        self.income_types = ["Work", "Investment", "Sales", "Rewards"] #make editable through ui later
-        self.expense_types = ["Transfer", "Bills", "Groceries","Takeout","Car","Travel","Entertainment","Other"] #make editable through ui later
+        self.income_types = ["Work", "Investment", "Sales", "Rewards"] #could make editable through ui later
+        self.expense_types = ["Transfer", "Bills", "Groceries","Takeout","Car","Travel","Entertainment","Other"] #could make editable through ui later
         self.income_expense_types = self.income_types + self.expense_types   
         self.bs_format = pd.DataFrame({
             "Item":   ["New"],
@@ -63,7 +64,8 @@ class Properties:
         self.year_p1 = "2024"
         self.month_p1 = "12"
         self.year_p2 = "2025"
-        self.month_p2 = "12"    
+        self.month_p2 = "12"
+        self.active_plot = ""    
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -85,7 +87,7 @@ class MainWindow(QMainWindow):
             pass
 
         #Set initial component properties
-        self.setWindowTitle(f"Finance Tracker {self.ps.APP_VERSION}")
+        self.setWindowTitle(f"{self.ps.APP_NAME} {self.ps.APP_VERSION}")
 
         self.ui.tabWidget.setTabText(0, "Balance Sheet")
         self.ui.tabWidget.setTabText(1, "Income + Expense")    
@@ -112,38 +114,21 @@ class MainWindow(QMainWindow):
 
         self.ui.tableBS.setAlternatingRowColors(True)
         self.ui.sheetTable.setAlternatingRowColors(True)
-        self.ui.tableBS.setShowGrid(False)        
-        self.ui.sheetTable.setShowGrid(False)     
+        # self.ui.tableBS.setShowGrid(False)        
+        # self.ui.sheetTable.setShowGrid(False)     
 
-        # self.menuBar().setStyleSheet("""
-        #     QMenuBar {
-        #         padding: 4px 10px;
-        #         spacing: 10px;
-        #         min-height: 38px;          /* ← your desired height */
-        #         max-height: 38px;          /* optional - force exact height */
-        #     }
-
-        #     QMenuBar::item {
-        #         padding: 4px 12px;
-        #         margin: 0px 3px;
-        #     }
-        # """)
-
-        self.statusBar().setStyleSheet("""
-            QStatusBar::item { border: none; }
-            QStatusBar { border: none; }
-        """)
+        self.ui.actionOpen.setIcon(QIcon("assets/folder_managed_24dp_FFFFFF_FILL0_wght400_GRAD0_opsz24.svg"))
+        self.ui.actionAbout.setIcon(QIcon("assets/info_24dp_FFFFFF_FILL0_wght400_GRAD0_opsz24.svg"))
 
         #toolbar setup
-        # self.ui.toolbar = self.addToolBar("Main Toolbar") #already added through designer
         self.ui.toolBar.setMovable(False)
         self.ui.toolBar.setFloatable(False)
-        self.ui.toolBar.setIconSize(PySide6.QtCore.QSize(18, 18))
+        self.ui.toolBar.setIconSize(PySide6.QtCore.QSize(22, 22))
 
         # self.ui.toolBar.addSeparator()
         self.add_toolbar_space(405)
 
-        self.ui.act_data_cursor = QAction(QIcon("assets/add_2_24dp_8B7DBE_FILL0_wght400_GRAD0_opsz24.svg"), "Data Cursor", self)
+        self.ui.act_data_cursor = QAction(QIcon("assets/add_2_24dp_B7B7B7_FILL0_wght400_GRAD0_opsz24.svg"), "Data Cursor (Ctrl+D)", self)
         self.ui.act_data_cursor.setShortcut("Ctrl+D")
         self.ui.act_data_cursor.setCheckable(True)
         self.ui.act_data_cursor.setChecked(False)
@@ -197,18 +182,50 @@ class MainWindow(QMainWindow):
         self.proxy = pg.SignalProxy(
             self.ui.graphBS1.scene().sigMouseMoved,
             rateLimit=60,           # max 60 updates/sec — smooth but not CPU killer
-            slot=self.data_cursor_moved
-        )          
+            slot=self.data_cursor_moved(self, self.ui.graphBS1)
+        )  
+        self.proxy = pg.SignalProxy(
+            self.ui.graphBS2.scene().sigMouseMoved,
+            rateLimit=60,           # max 60 updates/sec — smooth but not CPU killer
+            slot=self.data_cursor_moved(self, self.ui.graphBS2)
+        )    
+        self.proxy = pg.SignalProxy(
+            self.ui.graphBS3.scene().sigMouseMoved,
+            rateLimit=60,           # max 60 updates/sec — smooth but not CPU killer
+            slot=self.data_cursor_moved(self, self.ui.graphBS3)
+        ) 
+        self.proxy = pg.SignalProxy(
+            self.ui.graphIE1.scene().sigMouseMoved,
+            rateLimit=60,           # max 60 updates/sec — smooth but not CPU killer
+            slot=self.data_cursor_moved(self, self.ui.graphIE1)
+        )   
+        self.proxy = pg.SignalProxy(
+            self.ui.graphIE2.scene().sigMouseMoved,
+            rateLimit=60,           # max 60 updates/sec — smooth but not CPU killer
+            slot=self.data_cursor_moved(self, self.ui.graphIE2)
+        )   
+        self.proxy = pg.SignalProxy(
+            self.ui.graphIE3.scene().sigMouseMoved,
+            rateLimit=60,           # max 60 updates/sec — smooth but not CPU killer
+            slot=self.data_cursor_moved(self, self.ui.graphIE3)
+        )                                         
+        #label for data cursor
+        self.ui.data_label = pg.TextItem(
+            text="",
+            color=(255, 255, 255),
+            anchor=(0, 1),          # top-left corner of text
+            border=pg.mkPen('yellow', width=1),
+            fill=(0, 0, 0, 180)     # semi-transparent black background
+        )               
 
         #Callbacks
         MainWindow.year_changed(self)
-        MainWindow.month_changed(self)        
+        MainWindow.month_changed(self)       
 
         #Connections
         self.ui.actionOpen.triggered.connect(self.pick_folder)
         self.ui.actionAbout.triggered.connect(self.show_info)
         self.ui.sheetLoad.clicked.connect(self.load_csv)
-        self.ui.sheetSave.clicked.connect(self.save_csv)
         self.ui.sheetDelete.clicked.connect(self.delete_csv)   
         self.ui.sheetDropdown.currentIndexChanged.connect(self.changed_csv)     
         self.ui.pushButton_refresh.clicked.connect(self.refresh_plots)    
@@ -223,10 +240,8 @@ class MainWindow(QMainWindow):
         self.ui.comboBox_year_2.currentIndexChanged.connect(self.year_changed)      
         self.ui.comboBox_year_3.currentIndexChanged.connect(self.year_changed)
         self.ui.pushButton_add_row.clicked.connect(self.add_bs_row)
+        self.ui.pushButton_del_row.clicked.connect(self.delete_bs_row)        
         self.ui.pushButton_copy_previous.clicked.connect(self.bs_copy_previous)        
-        self.ui.pushButton_saveBS.clicked.connect(self.save_bs_month)
-
-        self.ui.graphBS1.scene().sigMouseClicked.connect(self.change_plot_focus)
 
     #----------------------------------------------------------
     def pick_folder(self):
@@ -238,7 +253,7 @@ class MainWindow(QMainWindow):
 
         if folder:                                         # user clicked OK (not Cancel)
             self.ps.data_folder = folder 
-            status.msg.show(self, f"Workspace directory set: {folder}", "green")                           
+            status.msg.show(self, f"Workspace directory set: {folder}")                           
     #----------------------------------------------------------
     def show_info(self):
         QMessageBox.information(
@@ -256,45 +271,63 @@ class MainWindow(QMainWindow):
         if self.ui.act_data_cursor.isChecked():
             self.ui.BS_area.setCursor(Qt.CursorShape.CrossCursor)   
             self.ui.IE_area.setCursor(Qt.CursorShape.CrossCursor) 
-
-            self.ui.data_label = pg.TextItem(
-                text="",
-                color=(255, 255, 255),
-                anchor=(0, 1),          # top-left corner of text
-                border=pg.mkPen('yellow', width=1),
-                fill=(0, 0, 0, 180)     # semi-transparent black background
-            )
-            self.ui.graphBS1.addItem(self.ui.data_label, ignoreBounds=True)
-
         else:
             self.ui.BS_area.setCursor(Qt.CursorShape.ArrowCursor)   
             self.ui.IE_area.setCursor(Qt.CursorShape.ArrowCursor) 
     #----------------------------------------------------------
-    def data_cursor_moved(self, event):
+    def data_cursor_moved(self, event, fig):
+
+        if not self.ui.act_data_cursor.isChecked():
+            return  # Exit if data cursor is not active
+
         pos = event[0]  # position in scene coordinates
 
-        # Check if mouse is inside plot area
-        if self.ui.graphBS1.sceneBoundingRect().contains(pos):
-            mouse_point = self.ui.graphBS1.plotItem.vb.mapSceneToView(pos)
-            x, y = mouse_point.x(), mouse_point.y()
+        if fig != self.ps.active_plot:
+            fig.addItem(self.ui.data_label, ignoreBounds=True)
+            self.ui.data_label.show()
+            #need to delete from any other plots
+            
+        self.ps.active_plot = fig
 
-            # # Update crosshair
-            # self.vline.setPos(x)
-            # self.hline.setPos(y)
+        # Check if mouse is inside plot area
+        if fig.sceneBoundingRect().contains(pos):
+            mouse_point = fig.plotItem.vb.mapSceneToView(pos)
+            x, y = mouse_point.x(), mouse_point.y()
 
             # Update coordinate label (positioned slightly above & right of cursor)
             self.ui.data_label.setText(f"x: {x:.3f}\ny: {y:.3f}")
             self.ui.data_label.setPos(x + 0.1, y + 0.3)  # small offset — adjust as needed
 
-            # Show everything
-            # self.vline.show()
-            # self.hline.show()
-            self.ui.data_label.show()
-        else:
+            # Show label
+            # self.ui.data_label.show()
+        # else:
             # Hide when mouse leaves plot area
-            # self.vline.hide()
-            # self.hline.hide()
-            self.ui.data_label.hide()           
+            # self.ui.data_label.hide()  
+
+        # # Check if mouse is inside plot area
+        # if self.ui.graphBS1.sceneBoundingRect().contains(pos):
+        #     mouse_point = self.ui.graphBS1.plotItem.vb.mapSceneToView(pos)
+        #     x, y = mouse_point.x(), mouse_point.y()
+
+        #     self.ui.graphBS1.addItem(self.ui.data_label, ignoreBounds=True)
+
+        #     # # Update crosshair
+        #     # self.vline.setPos(x)
+        #     # self.hline.setPos(y)
+
+        #     # Update coordinate label (positioned slightly above & right of cursor)
+        #     self.ui.data_label.setText(f"x: {x:.3f}\ny: {y:.3f}")
+        #     self.ui.data_label.setPos(x + 0.1, y + 0.3)  # small offset — adjust as needed
+
+        #     # Show everything
+        #     # self.vline.show()
+        #     # self.hline.show()
+        #     self.ui.data_label.show()
+        # else:
+        #     # Hide when mouse leaves plot area
+        #     # self.vline.hide()
+        #     # self.hline.hide()
+        #     self.ui.data_label.hide()           
 
     #----------------------------------------------------------
     def on_tab_changed(self, index):
@@ -357,14 +390,31 @@ class MainWindow(QMainWindow):
 
             status.msg.show(self, "Balance sheet row added")
         except:
-            status.msg.show(self, "Error adding balance sheet row - ensure to load a month first", "red")
+            status.msg.show(self, "Error adding balance sheet row - ensure to load a month first", "yellow")
     #----------------------------------------------------------
-    def save_bs_month(self):  
-        #save bs table data for month
-       
-        self.ps.db[self.ps.year_sel][self.ps.month_sel]["bs"] = self.ui.tableBS.model()._df.copy()
+    def delete_bs_row(self):  
+        #delete row from balance sheet table
+        try:
+            self.ps.db[self.ps.year_sel][self.ps.month_sel]["bs"] = pd.concat(
+                [self.ui.tableBS.model()._df,
+                self.ps.bs_format],
+                ignore_index=True
+            )     
 
-        status.msg.show(self, "Balance sheet table saved")            
+            # Show bs table - duplicated in load month below
+            df = self.ps.db[self.ps.year_sel][self.ps.month_sel]["bs"]
+            model = TableModel(df)
+            self.ui.tableBS.setModel(model)
+            self.ui.tableBS.resizeColumnsToContents()   
+
+            # Set column widths
+            BSheader = self.ui.tableBS.horizontalHeader()
+            BSheader.setSectionResizeMode(0, QHeaderView.Stretch)  #"item" column stretches 
+            self.ui.tableBS.setColumnWidth(1, 140)                 #fixed width      
+
+            status.msg.show(self, "Balance sheet row deleted")
+        except:
+            status.msg.show(self, "Error deleting balance sheet row - ensure a table cell is selected", "yellow")                    
     #----------------------------------------------------------
     def db_init(self):
         #cycle through years and months, populate basic db structure with blank entries
@@ -460,8 +510,19 @@ class MainWindow(QMainWindow):
         status.msg.show(self, f"{self.ui.comboBox_month.currentText()} {self.ps.year_sel} data loaded") 
     #----------------------------------------------------------
     def save_month(self):
+        #save all data for the month to the database
+        #need to remember not to change between sheets without saving in order to capture table changes
 
+        #save notes
         self.ps.db[self.ps.year_sel][self.ps.month_sel]["notes"] = self.ui.textEdit.toPlainText() 
+
+        #save balance sheet
+        self.ps.db[self.ps.year_sel][self.ps.month_sel]["bs"] = self.ui.tableBS.model()._df.copy()
+
+        #save income + expense sheet
+        if self.ui.sheetDropdown.count() > 0:
+            sheet_name = self.ui.sheetDropdown.currentText()        
+            self.ps.db[self.ps.year_sel][self.ps.month_sel]["ie"][sheet_name] = self.ui.sheetTable.model()._df.copy()          
 
         #calculate metrics
         calc_metrics(self, self.ps.year_sel, self.ps.month_sel)
@@ -470,11 +531,6 @@ class MainWindow(QMainWindow):
         np.savez_compressed(os.path.join(self.ps.data_folder,"db.npz"), db=self.ps.db)
 
         status.msg.show(self, f"{self.ui.comboBox_month.currentText()} {self.ps.year_sel} data saved")  
-
-        # msg = QMessageBox(QMessageBox.NoIcon, "Month Saved Successfully", "")
-        # msg.setIcon(QMessageBox.Information)
-        # msg.setText("Your changes have been saved")
-        # msg.exec()   
     #----------------------------------------------------------
     def year_changed(self):
         self.ps.year_sel = self.ui.comboBox_year.currentText()
@@ -490,15 +546,6 @@ class MainWindow(QMainWindow):
         if self.ui.sheetDropdown.count() > 0:
             sheet = self.ps.db[self.ps.year_sel][self.ps.month_sel]["ie"][self.ui.sheetDropdown.currentText()]
             self.ui.sheetTable.setModel(TableModel(sheet))                                 
-    #----------------------------------------------------------
-    def save_csv(self):
-        if self.ui.sheetDropdown.count() > 0:
-            sheet_name = self.ui.sheetDropdown.currentText()        
-            self.ps.db[self.ps.year_sel][self.ps.month_sel]["ie"][sheet_name] = self.ui.sheetTable.model()._df.copy()
-
-            # self.setCentralWidget(self.ui.graphBS1)
-
-            status.msg.show(self, f"Sheet saved: {sheet_name}") 
     #----------------------------------------------------------
     def delete_csv(self):
         #delete entry from database
@@ -526,58 +573,58 @@ class MainWindow(QMainWindow):
         if not file_path:
             return  # User cancelled
         
-        # try:
-        df = pd.read_csv(
-            file_path, header=None, names=['Date', 'Amount', 'x', 'y','Description']
-        )
-        # remove unneeded columns then insert "type" column between Date and Amount
-        df.drop(df.columns[[2,3]], axis=1, inplace=True)
-        df.insert(2, "Type", "-")
+        try:
+            df = pd.read_csv(
+                file_path, header=None, names=['Date', 'Amount', 'x', 'y','Description']
+            )
+            # remove unneeded columns then insert "type" column between Date and Amount
+            df.drop(df.columns[[2,3]], axis=1, inplace=True)
+            df.insert(2, "Type", "-")
 
-        TB = status.prog(self)
-        
-        for i in range(len(df)):
-            prog_value = int(100*(i+1)/len(df))
-            status.prog.update_val(TB, self, "Processing expenses", prog_value)
+            TB = status.prog(self)
+            
+            for i in range(len(df)):
+                prog_value = int(100*(i+1)/len(df))
+                status.prog.update_val(TB, self, "Processing expenses", prog_value)
 
-            # assign initial categorizations of items using ollama
-            if df['Amount'][i] > 0:
-                response = ollama.chat(model='gemma3:4b', messages=[{
-                    'role': 'user',
-                    'content': f"Return only one category from this list that best matches the expense. Return only the category itself. List: {', '.join(self.ps.income_types)}\n\nDescription: {df['Description'][i]}\n\nCategory:"
-                }])
-            else:
-                response = ollama.chat(model='gemma3:4b', messages=[{
-                    'role': 'user',
-                    'content': f"Return only one category from this list that best matches the expense. Return only the category itself. List: {', '.join(self.ps.expense_types)}\n\nDescription: {df['Description'][i]}\n\nCategory:"
-                }])
+                # assign initial categorizations of items using ollama
+                if df['Amount'][i] > 0:
+                    response = ollama.chat(model='gemma3:4b', messages=[{
+                        'role': 'user',
+                        'content': f"Return only one category from this list that best matches the expense. Return only the category itself. List: {', '.join(self.ps.income_types)}\n\nDescription: {df['Description'][i]}\n\nCategory:"
+                    }])
+                else:
+                    response = ollama.chat(model='gemma3:4b', messages=[{
+                        'role': 'user',
+                        'content': f"Return only one category from this list that best matches the expense. Return only the category itself. List: {', '.join(self.ps.expense_types)}\n\nDescription: {df['Description'][i]}\n\nCategory:"
+                    }])
 
-            response_isolated = response['message']['content'].strip() 
+                response_isolated = response['message']['content'].strip() 
 
-            if response_isolated in self.ps.expense_types:
-                df['Type'].loc[i] = response_isolated                                   
+                if response_isolated in self.ps.expense_types:
+                    df['Type'].loc[i] = response_isolated                                   
 
-        status.prog.close(TB, self)      
+            status.prog.close(TB, self)      
 
-        # Show in table
-        model = TableModel(df)
-        self.ui.sheetTable.setModel(model)
-        self.ui.sheetTable.resizeColumnsToContents()
+            # Show in table
+            model = TableModel(df)
+            self.ui.sheetTable.setModel(model)
+            self.ui.sheetTable.resizeColumnsToContents()
 
-        if "Type" in df.columns:
-            col_idx = df.columns.get_loc("Type")
-            delegate = ComboBoxDelegate(self.ps.income_expense_types, self.ui.sheetTable)
-            self.ui.sheetTable.setItemDelegateForColumn(col_idx, delegate)     
+            if "Type" in df.columns:
+                col_idx = df.columns.get_loc("Type")
+                delegate = ComboBoxDelegate(self.ps.income_expense_types, self.ui.sheetTable)
+                self.ui.sheetTable.setItemDelegateForColumn(col_idx, delegate)     
 
-        # Add sheet to dropdown
-        self.ui.sheetDropdown.addItem(Path(file_path).stem)
-        self.ui.sheetDropdown.setCurrentIndex(self.ui.sheetDropdown.count() - 1)
+            # Add sheet to dropdown
+            self.ui.sheetDropdown.addItem(Path(file_path).stem)
+            self.ui.sheetDropdown.setCurrentIndex(self.ui.sheetDropdown.count() - 1)
 
-        #auto save sheet to database
-        self.save_csv()
+            #auto save sheet to database
+            self.save_month()
 
-        # except Exception as e:
-        #     QMessageBox.critical(self, "Error Loading CSV", str(e))  
+        except Exception as e:
+            QMessageBox.critical(self, "Error Loading CSV", str(e))  
     #----------------------------------------------------------
     def refresh_plots(self):   
         #check that the time range selected on the dropdowns is valid - end date must be after start date
@@ -588,17 +635,6 @@ class MainWindow(QMainWindow):
         else:
             plotting.refresh(self)           
             status.msg.show(self, "Plots refreshed")      
-    #----------------------------------------------------------
-    def change_plot_focus(self, event): 
-        #unused       
-        if event.double():
-            if self.isFullScreen():
-                # self.showNormal()
-                self.ui.tabWidget.setCentralWidget(self.ui.graphBS1)
-            else:
-                # self.showFullScreen()  # True full screen (no title bar)
-                # Or self.showMaximized() for maximized window
-                pass
     #----------------------------------------------------------
 
 if __name__ == "__main__":
@@ -614,15 +650,15 @@ if __name__ == "__main__":
         pass      
 
     app.setWindowIcon(QIcon("assets/finance_mode_24dp_75FB4C_FILL0_wght400_GRAD0_opsz24.ico"))
-    # app.setStyle("Fusion")
+    app.setStyle("windows11")
 
     #import stylesheet and apply
     with open("styling//mainstyle.qss", "r") as f:
         _style = f.read()
         app.setStyleSheet(_style)    
 
-    window = MainWindow()
-    window.setFixedSize(1540, 800)
-    # window.setWindowIcon(QIcon("assets/finance_mode_24dp_75FB4C_FILL0_wght400_GRAD0_opsz24.ico"))  # optional: also set per window
+    window = MainWindow() 
+    window.setFixedSize(window.width(), window.height())        
     window.show()
+    # window.setFixedSize(1540, 825) 
     sys.exit(app.exec())

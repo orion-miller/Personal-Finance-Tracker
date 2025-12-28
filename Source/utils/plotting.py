@@ -150,7 +150,7 @@ def refresh(self):
     x = np.arange(len(pdata["bs"]))
 
     for i, key in enumerate(dtable.keys()):
-        fig.plot(x=x, y=dtable[key], width=1.5, pen=colors[i], name=key)
+        fig.plot(x=x, y=dtable[key], width=3, pen=colors[i], name=key)
         # fig.plot(x=x, y=dtable[key], width=1, pen=colors[i], symbol='o', name=key)        
 
     # Custom x-axis labels
@@ -163,7 +163,7 @@ def refresh(self):
     x = np.arange(len(pdata["bs_met"]))
 
     for i, key in enumerate(dtable.keys()):
-        fig.plot(x=x, y=dtable[key], width=1.5, pen=colors[i], name=key)
+        fig.plot(x=x, y=dtable[key], width=2, pen=colors[i], name=key)
   
     # Custom x-axis labels
     ax = fig.getAxis('bottom') 
