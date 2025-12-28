@@ -36,8 +36,8 @@ from utils import plotting, status, calc_metrics
 
 class Properties:
     def __init__(self):
-        self.APP_VERSION = "1.0"
-        self.APP_NAME = "Finance Tracker"        
+        self.APP_NAME = "Finance Tracker"          
+        self.APP_VERSION = "1.0"      
         self.data_folder = "D:\\!Orion_Documents\\Financial\\!OM_Finance_Tracker" 
         self.income_types = ["Work", "Investment", "Sales", "Rewards"] #could make editable through ui later
         self.expense_types = ["Transfer", "Bills", "Groceries","Takeout","Car","Travel","Entertainment","Other"] #could make editable through ui later
@@ -73,8 +73,7 @@ class MainWindow(QMainWindow):
         self.ui = Ui_OrionsApp()
         self.ui.setupUi(self)        
 
-        #Startup tasks
-
+        #-------------------Startup tasks-------------------
         #Properties
         self.ps = Properties()
 
@@ -393,28 +392,30 @@ class MainWindow(QMainWindow):
             status.msg.show(self, "Error adding balance sheet row - ensure to load a month first", "yellow")
     #----------------------------------------------------------
     def delete_bs_row(self):  
-        #delete row from balance sheet table
+        #delete row from balance sheet table - supports multiselect
+        row = []
         try:
-            self.ps.db[self.ps.year_sel][self.ps.month_sel]["bs"] = pd.concat(
-                [self.ui.tableBS.model()._df,
-                self.ps.bs_format],
-                ignore_index=True
-            )     
+            for i, item in enumerate(self.ui.tableBS.selectionModel().selectedIndexes()):
+                row.append(item.row())
+
+            row = np.unique(row)  #get unique row indices only
+
+            #drop rows from bs dataframe
+            self.ps.db[self.ps.year_sel][self.ps.month_sel]["bs"] = self.ps.db[self.ps.year_sel][self.ps.month_sel]["bs"].drop(index=row).reset_index(drop=True)
 
             # Show bs table - duplicated in load month below
-            df = self.ps.db[self.ps.year_sel][self.ps.month_sel]["bs"]
-            model = TableModel(df)
+            model = TableModel(self.ps.db[self.ps.year_sel][self.ps.month_sel]["bs"])
             self.ui.tableBS.setModel(model)
             self.ui.tableBS.resizeColumnsToContents()   
 
             # Set column widths
             BSheader = self.ui.tableBS.horizontalHeader()
             BSheader.setSectionResizeMode(0, QHeaderView.Stretch)  #"item" column stretches 
-            self.ui.tableBS.setColumnWidth(1, 140)                 #fixed width      
+            self.ui.tableBS.setColumnWidth(1, 140)                 #fixed width                  
 
-            status.msg.show(self, "Balance sheet row deleted")
+            status.msg.show(self, "Balance sheet row(s) deleted")
         except:
-            status.msg.show(self, "Error deleting balance sheet row - ensure a table cell is selected", "yellow")                    
+            status.msg.show(self, "Error deleting balance sheet row(s) - ensure a table cell is selected", "yellow")                    
     #----------------------------------------------------------
     def db_init(self):
         #cycle through years and months, populate basic db structure with blank entries
