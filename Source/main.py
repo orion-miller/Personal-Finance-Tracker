@@ -177,47 +177,92 @@ class MainWindow(QMainWindow):
             )  # Enable smooth lines globally
         plotting.init(self)             
 
-        # === Plot Mouse tracking ===
-        self.proxy = pg.SignalProxy(
-            self.ui.graphBS1.scene().sigMouseMoved,
-            rateLimit=60,           # max 60 updates/sec — smooth but not CPU killer
-            slot=self.data_cursor_moved(self, self.ui.graphBS1)
-        )  
-        self.proxy = pg.SignalProxy(
-            self.ui.graphBS2.scene().sigMouseMoved,
-            rateLimit=60,           # max 60 updates/sec — smooth but not CPU killer
-            slot=self.data_cursor_moved(self, self.ui.graphBS2)
-        )    
-        self.proxy = pg.SignalProxy(
-            self.ui.graphBS3.scene().sigMouseMoved,
-            rateLimit=60,           # max 60 updates/sec — smooth but not CPU killer
-            slot=self.data_cursor_moved(self, self.ui.graphBS3)
-        ) 
-        self.proxy = pg.SignalProxy(
-            self.ui.graphIE1.scene().sigMouseMoved,
-            rateLimit=60,           # max 60 updates/sec — smooth but not CPU killer
-            slot=self.data_cursor_moved(self, self.ui.graphIE1)
-        )   
-        self.proxy = pg.SignalProxy(
-            self.ui.graphIE2.scene().sigMouseMoved,
-            rateLimit=60,           # max 60 updates/sec — smooth but not CPU killer
-            slot=self.data_cursor_moved(self, self.ui.graphIE2)
-        )   
-        self.proxy = pg.SignalProxy(
-            self.ui.graphIE3.scene().sigMouseMoved,
-            rateLimit=60,           # max 60 updates/sec — smooth but not CPU killer
-            slot=self.data_cursor_moved(self, self.ui.graphIE3)
-        )                                         
+        #all this plot logic following should be put in a subfunction and called for each plot to not duplicate
+
         #label for data cursor
-        self.ui.data_label = pg.TextItem(
+        self.ui.graphBS1_label = pg.TextItem(
             text="",
             color=(255, 255, 255),
             anchor=(0, 1),          # top-left corner of text
             border=pg.mkPen('yellow', width=1),
             fill=(0, 0, 0, 180)     # semi-transparent black background
-        )               
+        )      
+        self.ui.graphBS2_label = pg.TextItem(
+            text="",
+            color=(255, 255, 255),
+            anchor=(0, 1),          # top-left corner of text
+            border=pg.mkPen('yellow', width=1),
+            fill=(0, 0, 0, 180)     # semi-transparent black background
+        )  
+        self.ui.graphBS3_label = pg.TextItem(
+            text="",
+            color=(255, 255, 255),
+            anchor=(0, 1),          # top-left corner of text
+            border=pg.mkPen('yellow', width=1),
+            fill=(0, 0, 0, 180)     # semi-transparent black background
+        )  
+        self.ui.graphIE1_label = pg.TextItem(
+            text="",
+            color=(255, 255, 255),
+            anchor=(0, 1),          # top-left corner of text
+            border=pg.mkPen('yellow', width=1),
+            fill=(0, 0, 0, 180)     # semi-transparent black background
+        )   
+        self.ui.graphIE2_label = pg.TextItem(
+            text="",
+            color=(255, 255, 255),
+            anchor=(0, 1),          # top-left corner of text
+            border=pg.mkPen('yellow', width=1),
+            fill=(0, 0, 0, 180)     # semi-transparent black background
+        )    
+        self.ui.graphIE3_label = pg.TextItem(
+            text="",
+            color=(255, 255, 255),
+            anchor=(0, 1),          # top-left corner of text
+            border=pg.mkPen('yellow', width=1),
+            fill=(0, 0, 0, 180)     # semi-transparent black background
+        )  
+        self.ui.graphBS1.addItem(self.ui.graphBS1_label, ignoreBounds=True)
+        self.ui.graphBS2.addItem(self.ui.graphBS2_label, ignoreBounds=True)
+        self.ui.graphBS3.addItem(self.ui.graphBS3_label, ignoreBounds=True)
+        self.ui.graphIE1.addItem(self.ui.graphIE1_label, ignoreBounds=True)
+        self.ui.graphIE2.addItem(self.ui.graphIE2_label, ignoreBounds=True)
+        self.ui.graphIE3.addItem(self.ui.graphIE3_label, ignoreBounds=True)
+
+        # === Plot Mouse tracking ===
+        self.proxyBS1 = pg.SignalProxy(
+            self.ui.graphBS1.scene().sigMouseMoved,
+            rateLimit=60,           # max 60 updates/sec — smooth but not CPU killer
+            slot=lambda evt: self.data_cursor_moved(evt, self.ui.graphBS1, self.ui.graphBS1_label)
+        )  
+        self.proxyBS2 = pg.SignalProxy(
+            self.ui.graphBS2.scene().sigMouseMoved,
+            rateLimit=60,           # max 60 updates/sec — smooth but not CPU killer
+            slot=lambda evt: self.data_cursor_moved(evt, self.ui.graphBS2, self.ui.graphBS2_label)
+        )    
+        self.proxyBS3 = pg.SignalProxy(
+            self.ui.graphBS3.scene().sigMouseMoved,
+            rateLimit=60,           # max 60 updates/sec — smooth but not CPU killer
+            slot=lambda evt: self.data_cursor_moved(evt, self.ui.graphBS3, self.ui.graphBS3_label)
+        ) 
+        self.proxyIE1 = pg.SignalProxy(
+            self.ui.graphIE1.scene().sigMouseMoved,
+            rateLimit=60,           # max 60 updates/sec — smooth but not CPU killer
+            slot=lambda evt: self.data_cursor_moved(evt, self.ui.graphIE1, self.ui.graphIE1_label)
+        )   
+        self.proxyIE2 = pg.SignalProxy(
+            self.ui.graphIE2.scene().sigMouseMoved,
+            rateLimit=60,           # max 60 updates/sec — smooth but not CPU killer
+            slot=lambda evt: self.data_cursor_moved(evt, self.ui.graphIE2, self.ui.graphIE2_label)
+        )   
+        self.proxyIE3 = pg.SignalProxy(
+            self.ui.graphIE3.scene().sigMouseMoved,
+            rateLimit=60,           # max 60 updates/sec — smooth but not CPU killer
+            slot=lambda evt: self.data_cursor_moved(evt, self.ui.graphIE3, self.ui.graphIE3_label)
+        )      
 
         #Callbacks
+        MainWindow.data_cursor_switch(self)
         MainWindow.year_changed(self)
         MainWindow.month_changed(self)       
 
@@ -273,20 +318,31 @@ class MainWindow(QMainWindow):
         else:
             self.ui.BS_area.setCursor(Qt.CursorShape.ArrowCursor)   
             self.ui.IE_area.setCursor(Qt.CursorShape.ArrowCursor) 
+            self.ui.graphBS1_label.hide()
+            self.ui.graphBS2_label.hide()
+            self.ui.graphBS3_label.hide()
+            self.ui.graphIE1_label.hide()
+            self.ui.graphIE2_label.hide()
+            self.ui.graphIE3_label.hide()            
     #----------------------------------------------------------
-    def data_cursor_moved(self, event, fig):
+    def data_cursor_moved(self, event, fig, label):
 
         if not self.ui.act_data_cursor.isChecked():
             return  # Exit if data cursor is not active
 
         pos = event[0]  # position in scene coordinates
 
-        if fig != self.ps.active_plot:
-            fig.addItem(self.ui.data_label, ignoreBounds=True)
-            self.ui.data_label.show()
-            #need to delete from any other plots
-            
-        self.ps.active_plot = fig
+        if str(fig) != self.ps.active_plot: #check if active plot has changed since last call            
+            #hide all labels and then show only for active plot
+            self.ui.graphBS1_label.hide()
+            self.ui.graphBS2_label.hide()
+            self.ui.graphBS3_label.hide()
+            self.ui.graphIE1_label.hide()
+            self.ui.graphIE2_label.hide()
+            self.ui.graphIE3_label.hide()
+            label.show()
+
+            self.ps.active_plot = str(fig)                 
 
         # Check if mouse is inside plot area
         if fig.sceneBoundingRect().contains(pos):
@@ -294,8 +350,8 @@ class MainWindow(QMainWindow):
             x, y = mouse_point.x(), mouse_point.y()
 
             # Update coordinate label (positioned slightly above & right of cursor)
-            self.ui.data_label.setText(f"x: {x:.3f}\ny: {y:.3f}")
-            self.ui.data_label.setPos(x + 0.1, y + 0.3)  # small offset — adjust as needed
+            label.setText(f"x: {x:.3f}\ny: {y:.3f}")
+            label.setPos(x, y)  # small offset — adjust as needed
 
             # Show label
             # self.ui.data_label.show()

@@ -107,6 +107,14 @@ def refresh(self):
     self.ui.graphIE2.clear() 
     self.ui.graphIE3.clear() 
 
+    #re-add cleared labels, could be better to find how to not remove them above and only clear the plotted data
+    self.ui.graphBS1.addItem(self.ui.graphBS1_label, ignoreBounds=True)
+    self.ui.graphBS2.addItem(self.ui.graphBS2_label, ignoreBounds=True)
+    self.ui.graphBS3.addItem(self.ui.graphBS3_label, ignoreBounds=True)
+    self.ui.graphIE1.addItem(self.ui.graphIE1_label, ignoreBounds=True)
+    self.ui.graphIE2.addItem(self.ui.graphIE2_label, ignoreBounds=True)
+    self.ui.graphIE3.addItem(self.ui.graphIE3_label, ignoreBounds=True)
+
     #define color order for plotting
     colors = [
         '#00ff00',        
@@ -181,7 +189,7 @@ def refresh(self):
     labels = []
 
     for i, item in enumerate(dtable['Item']):  
-        if dtable['Amount'][i] <= 0: #only plot negative vals for expenses, ignore transfers            
+        if dtable['Amount'][i] <= 0: #only plot positive vals for assets            
             continue
         else: #plot category
             bar = pg.BarGraphItem(x=x_idx, height=dtable['Amount'][i], width=1, brush=colors[i], pen='w')
@@ -224,10 +232,6 @@ def refresh(self):
 
     # Data
     dtable = self.ps.db[self.ps.year_sel][self.ps.month_sel]["ie_cat"]
-    try:
-        dtable = dtable.pop('Transfer')
-    except:
-        pass
 
     if dtable != {}:
         cats = dtable.keys()

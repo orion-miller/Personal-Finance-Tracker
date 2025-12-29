@@ -233,95 +233,212 @@ from PySide6.QtWidgets import (
 # import pyqtgraph.examples
 # pyqtgraph.examples.run()
 
+
+
+# import sys
+# import numpy as np
+# import pyqtgraph as pg
+# from PySide6.QtWidgets import QApplication, QMainWindow
+
+
+# class CrosshairDataCursor(QMainWindow):
+#     def __init__(self):
+#         super().__init__()
+#         self.setWindowTitle("PyQtGraph — Data Cursor / Crosshair")
+#         self.resize(900, 650)
+
+#         # === Plot setup ===
+#         self.plot_widget = pg.PlotWidget()
+#         self.setCentralWidget(self.plot_widget)
+
+#         # Example data
+#         x = np.linspace(0, 10, 500)
+#         y = np.sin(x * 2.3) * x + np.random.normal(0, 0.4, len(x))
+
+#         self.curve = self.plot_widget.plot(
+#             x, y,
+#             pen=pg.mkPen('y', width=1.5),
+#             name="Noisy signal"
+#         )
+
+#         # Grid & labels
+#         self.plot_widget.showGrid(x=True, y=True, alpha=0.4)
+#         self.plot_widget.setLabel('left', 'Value')
+#         self.plot_widget.setLabel('bottom', 'Time (s)')
+
+#         # === Crosshair elements ===
+#         self.vline = pg.InfiniteLine(angle=90, movable=False, pen=pg.mkPen('r', width=1, style=pg.QtCore.Qt.DashLine))
+#         self.hline = pg.InfiniteLine(angle=0,  movable=False, pen=pg.mkPen('r', width=1, style=pg.QtCore.Qt.DashLine))
+
+#         self.plot_widget.addItem(self.vline)
+#         self.plot_widget.addItem(self.hline)
+
+#         # Label for coordinates (will follow mouse)
+#         self.label = pg.TextItem(
+#             text="",
+#             color=(255, 255, 255),
+#             anchor=(0, 1),          # top-left corner of text
+#             border=pg.mkPen('yellow', width=1),
+#             fill=(0, 0, 0, 180)     # semi-transparent black background
+#         )
+#         self.plot_widget.addItem(self.label, ignoreBounds=True)
+
+#         # Hide by default
+#         self.vline.hide()
+#         self.hline.hide()
+#         self.label.hide()
+
+#         # === Mouse tracking ===
+#         self.proxy = pg.SignalProxy(
+#             self.plot_widget.scene().sigMouseMoved,
+#             rateLimit=60,           # max 60 updates/sec — smooth but not CPU killer
+#             slot=self.on_mouse_moved
+#         )
+
+#     def on_mouse_moved(self, evt):
+#         pos = evt[0]  # position in scene coordinates
+
+#         # Check if mouse is inside plot area
+#         if self.plot_widget.sceneBoundingRect().contains(pos):
+#             mouse_point = self.plot_widget.plotItem.vb.mapSceneToView(pos)
+#             x, y = mouse_point.x(), mouse_point.y()
+
+#             # Update crosshair
+#             self.vline.setPos(x)
+#             self.hline.setPos(y)
+
+#             # Update coordinate label (positioned slightly above & right of cursor)
+#             self.label.setText(f"x: {x:.3f}\ny: {y:.3f}")
+#             self.label.setPos(x + 0.1, y + 0.3)  # small offset — adjust as needed
+
+#             # Show everything
+#             self.vline.show()
+#             self.hline.show()
+#             self.label.show()
+#         else:
+#             # Hide when mouse leaves plot area
+#             self.vline.hide()
+#             self.hline.hide()
+#             self.label.hide()
+
+
+# if __name__ == '__main__':
+#     # Optional: dark mode look (very popular)
+#     pg.setConfigOptions(
+#         background='k',
+#         foreground='w',
+#         antialias=True
+#     )
+
+#     app = QApplication(sys.argv)
+#     window = CrosshairDataCursor()
+#     window.show()
+#     sys.exit(app.exec())
+
+
+
 import sys
 import numpy as np
 import pyqtgraph as pg
+from pyqtgraph.dockarea import Dock, DockArea
 from PySide6.QtWidgets import QApplication, QMainWindow
 
 
-class CrosshairDataCursor(QMainWindow):
+class MultiPlotDataCursor(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("PyQtGraph — Data Cursor / Crosshair")
-        self.resize(900, 650)
+        self.setWindowTitle("PyQtGraph — Multi-Plot Data Cursor in DockArea")
+        self.resize(1200, 800)
 
-        # === Plot setup ===
-        self.plot_widget = pg.PlotWidget()
-        self.setCentralWidget(self.plot_widget)
+        # === DockArea setup ===
+        self.dock_area = DockArea()
+        self.setCentralWidget(self.dock_area)
 
-        # Example data
+        # Create multiple docks with plots
+        self.plot1 = self.create_plot_dock("Plot 1 - Sine Wave")
+        self.plot2 = self.create_plot_dock("Plot 2 - Cosine Wave")
+        self.plot3 = self.create_plot_dock("Plot 3 - Noisy Signal")
+
+        # Arrange docks
+        self.dock_area.addDock(self.plot1['dock'], 'left')
+        self.dock_area.addDock(self.plot2['dock'], 'right', self.plot1['dock'])
+        self.dock_area.addDock(self.plot3['dock'], 'bottom', self.plot2['dock'])
+
+    def create_plot_dock(self, title: str):
+        """Factory to create a dock with plot + independent data cursor"""
+        dock = Dock(title)
+        plot_widget = pg.PlotWidget()
+        dock.addWidget(plot_widget)
+
+        # Generate example data
         x = np.linspace(0, 10, 500)
-        y = np.sin(x * 2.3) * x + np.random.normal(0, 0.4, len(x))
+        if title == "Plot 1 - Sine Wave":
+            y = np.sin(x * 2.3) * x
+        elif title == "Plot 2 - Cosine Wave":
+            y = np.cos(x * 1.8) * x**0.5
+        else:
+            y = np.sin(x) + np.random.normal(0, 0.5, len(x))
 
-        self.curve = self.plot_widget.plot(
-            x, y,
-            pen=pg.mkPen('y', width=1.5),
-            name="Noisy signal"
-        )
+        plot_widget.plot(x, y, pen=pg.mkPen('y', width=2))
 
         # Grid & labels
-        self.plot_widget.showGrid(x=True, y=True, alpha=0.4)
-        self.plot_widget.setLabel('left', 'Value')
-        self.plot_widget.setLabel('bottom', 'Time (s)')
+        plot_widget.showGrid(x=True, y=True, alpha=0.4)
+        plot_widget.setLabel('left', 'Value')
+        plot_widget.setLabel('bottom', 'Time (s)')
 
-        # === Crosshair elements ===
-        self.vline = pg.InfiniteLine(angle=90, movable=False, pen=pg.mkPen('r', width=1, style=pg.QtCore.Qt.DashLine))
-        self.hline = pg.InfiniteLine(angle=0,  movable=False, pen=pg.mkPen('r', width=1, style=pg.QtCore.Qt.DashLine))
+        # === Independent data cursor for THIS plot ===
+        vline = pg.InfiniteLine(angle=90, movable=False, pen=pg.mkPen('r', width=1, style=pg.QtCore.Qt.DashLine))
+        hline = pg.InfiniteLine(angle=0, movable=False, pen=pg.mkPen('r', width=1, style=pg.QtCore.Qt.DashLine))
+        plot_widget.addItem(vline)
+        plot_widget.addItem(hline)
 
-        self.plot_widget.addItem(self.vline)
-        self.plot_widget.addItem(self.hline)
-
-        # Label for coordinates (will follow mouse)
-        self.label = pg.TextItem(
+        label = pg.TextItem(
             text="",
             color=(255, 255, 255),
-            anchor=(0, 1),          # top-left corner of text
+            anchor=(0, 1),
             border=pg.mkPen('yellow', width=1),
-            fill=(0, 0, 0, 180)     # semi-transparent black background
+            fill=(0, 0, 0, 180)
         )
-        self.plot_widget.addItem(self.label, ignoreBounds=True)
+        plot_widget.addItem(label, ignoreBounds=True)
 
         # Hide by default
-        self.vline.hide()
-        self.hline.hide()
-        self.label.hide()
+        vline.hide()
+        hline.hide()
+        label.hide()
 
-        # === Mouse tracking ===
-        self.proxy = pg.SignalProxy(
-            self.plot_widget.scene().sigMouseMoved,
-            rateLimit=60,           # max 60 updates/sec — smooth but not CPU killer
-            slot=self.on_mouse_moved
+        # Mouse tracking for THIS plot only
+        proxy = pg.SignalProxy(
+            plot_widget.scene().sigMouseMoved,
+            rateLimit=60,
+            slot=lambda evt: self.on_mouse_moved(evt, plot_widget, vline, hline, label)
         )
 
-    def on_mouse_moved(self, evt):
-        pos = evt[0]  # position in scene coordinates
+        return {'dock': dock, 'plot': plot_widget, 'proxy': proxy}  # return dict for reference if needed
 
-        # Check if mouse is inside plot area
-        if self.plot_widget.sceneBoundingRect().contains(pos):
-            mouse_point = self.plot_widget.plotItem.vb.mapSceneToView(pos)
+    def on_mouse_moved(self, evt, plot_widget: pg.PlotWidget, vline, hline, label):
+        pos = evt[0]
+
+        # Check if mouse is inside THIS plot's area
+        if plot_widget.sceneBoundingRect().contains(pos):
+            mouse_point = plot_widget.plotItem.vb.mapSceneToView(pos)
             x, y = mouse_point.x(), mouse_point.y()
 
-            # Update crosshair
-            self.vline.setPos(x)
-            self.hline.setPos(y)
+            vline.setPos(x)
+            hline.setPos(y)
 
-            # Update coordinate label (positioned slightly above & right of cursor)
-            self.label.setText(f"x: {x:.3f}\ny: {y:.3f}")
-            self.label.setPos(x + 0.1, y + 0.3)  # small offset — adjust as needed
+            label.setText(f"x: {x:.3f}\ny: {y:.3f}")
+            label.setPos(x + 0.1, y + 0.3)
 
-            # Show everything
-            self.vline.show()
-            self.hline.show()
-            self.label.show()
+            vline.show()
+            hline.show()
+            label.show()
         else:
-            # Hide when mouse leaves plot area
-            self.vline.hide()
-            self.hline.hide()
-            self.label.hide()
+            vline.hide()
+            hline.hide()
+            label.hide()
 
 
 if __name__ == '__main__':
-    # Optional: dark mode look (very popular)
     pg.setConfigOptions(
         background='k',
         foreground='w',
@@ -329,6 +446,6 @@ if __name__ == '__main__':
     )
 
     app = QApplication(sys.argv)
-    window = CrosshairDataCursor()
+    window = MultiPlotDataCursor()
     window.show()
     sys.exit(app.exec())
