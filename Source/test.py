@@ -193,80 +193,6 @@ from PySide6.QtWidgets import (
 # win.close()
 
 
-# import pyqtgraph.examples
-# pyqtgraph.examples.run()
-
-
-
-# import sys
-# import numpy as np
-# import PySide6.QtWidgets as QtWidgets
-# from PySide6.QtWidgets import QApplication, QMainWindow, QDockWidget, QWidget, QVBoxLayout
-# from PySide6.QtCore import Qt
-# import pyqtgraph as pg
-
-# class PlotPanel(QWidget):
-#     def __init__(self, title, x_data, y_data):
-#         super().__init__()
-#         layout = QVBoxLayout(self)
-#         self.plot_widget = pg.PlotWidget()
-#         layout.addWidget(self.plot_widget)
-        
-#         # Plot data with customization for interactivity
-#         self.data_line = self.plot_widget.plot(x_data, y_data, pen=pg.mkPen('b', width=2))
-#         self.plot_widget.setTitle(title)
-#         self.plot_widget.setLabel('left', 'Value')
-#         self.plot_widget.setLabel('bottom', 'Time/Index')
-#         self.plot_widget.showGrid(x=True, y=True)
-#         self.plot_widget.addLegend()
-        
-#         # Enable built-in interactivity (zoom, pan, etc.)
-#         self.plot_widget.setBackground('k')  # White background for visibility
-        
-#         # Make it responsive to resizing
-#         self.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-
-#     def update_data(self, new_x, new_y):
-#         # Efficient update for responsiveness
-#         self.data_line.setData(new_x, new_y)
-
-# class DataViewer(QMainWindow):
-#     def __init__(self):
-#         super().__init__()
-#         self.setWindowTitle("Interactive Data Viewer")
-#         self.resize(800, 600)
-        
-#         # Sample data (replace with your data loading logic, e.g., pandas.read_csv)
-#         x = np.arange(100)
-#         y1 = np.sin(x / 10) * 50 + np.random.normal(0, 5, 100)
-#         y2 = np.cos(x / 10) * 30 + np.random.normal(0, 10, 100)
-#         y3 = np.random.random(100) * 100
-        
-#         # Create dockable plot panels
-#         self.add_dock("Sine Wave Data", x, y1, Qt.LeftDockWidgetArea)
-#         self.add_dock("Cosine Wave Data", x, y2, Qt.RightDockWidgetArea)
-#         self.add_dock("Random Data", x, y3, Qt.BottomDockWidgetArea)
-        
-#         # Optional: Add a central widget for data controls (e.g., file loader or tree view)
-#         central_widget = QWidget()
-#         central_layout = QVBoxLayout(central_widget)
-#         central_layout.addWidget(QLabel("Central Area: Add data selectors here"))
-#         self.setCentralWidget(central_widget)
-
-#     def add_dock(self, title, x_data, y_data, area):
-#         dock = QDockWidget(title, self)
-#         plot_panel = PlotPanel(title, x_data, y_data)
-#         dock.setWidget(plot_panel)
-#         self.addDockWidget(area, dock)
-#         dock.setFloating(False)  # Start docked, but user can float it
-
-# if __name__ == "__main__":
-#     app = QApplication(sys.argv)
-#     viewer = DataViewer()
-#     viewer.show()
-#     sys.exit(app.exec())
-
-
 
 # from PySide6.QtGui import QCursor
 # import pyqtgraph as pg
@@ -309,83 +235,217 @@ from PySide6.QtWidgets import (
 
 
 
+# import sys
+# import numpy as np
+# import pyqtgraph as pg
+# from PySide6.QtWidgets import QApplication, QMainWindow
+
+
+# class CrosshairDataCursor(QMainWindow):
+#     def __init__(self):
+#         super().__init__()
+#         self.setWindowTitle("PyQtGraph — Data Cursor / Crosshair")
+#         self.resize(900, 650)
+
+#         # === Plot setup ===
+#         self.plot_widget = pg.PlotWidget()
+#         self.setCentralWidget(self.plot_widget)
+
+#         # Example data
+#         x = np.linspace(0, 10, 500)
+#         y = np.sin(x * 2.3) * x + np.random.normal(0, 0.4, len(x))
+
+#         self.curve = self.plot_widget.plot(
+#             x, y,
+#             pen=pg.mkPen('y', width=1.5),
+#             name="Noisy signal"
+#         )
+
+#         # Grid & labels
+#         self.plot_widget.showGrid(x=True, y=True, alpha=0.4)
+#         self.plot_widget.setLabel('left', 'Value')
+#         self.plot_widget.setLabel('bottom', 'Time (s)')
+
+#         # === Crosshair elements ===
+#         self.vline = pg.InfiniteLine(angle=90, movable=False, pen=pg.mkPen('r', width=1, style=pg.QtCore.Qt.DashLine))
+#         self.hline = pg.InfiniteLine(angle=0,  movable=False, pen=pg.mkPen('r', width=1, style=pg.QtCore.Qt.DashLine))
+
+#         self.plot_widget.addItem(self.vline)
+#         self.plot_widget.addItem(self.hline)
+
+#         # Label for coordinates (will follow mouse)
+#         self.label = pg.TextItem(
+#             text="",
+#             color=(255, 255, 255),
+#             anchor=(0, 1),          # top-left corner of text
+#             border=pg.mkPen('yellow', width=1),
+#             fill=(0, 0, 0, 180)     # semi-transparent black background
+#         )
+#         self.plot_widget.addItem(self.label, ignoreBounds=True)
+
+#         # Hide by default
+#         self.vline.hide()
+#         self.hline.hide()
+#         self.label.hide()
+
+#         # === Mouse tracking ===
+#         self.proxy = pg.SignalProxy(
+#             self.plot_widget.scene().sigMouseMoved,
+#             rateLimit=60,           # max 60 updates/sec — smooth but not CPU killer
+#             slot=self.on_mouse_moved
+#         )
+
+#     def on_mouse_moved(self, evt):
+#         pos = evt[0]  # position in scene coordinates
+
+#         # Check if mouse is inside plot area
+#         if self.plot_widget.sceneBoundingRect().contains(pos):
+#             mouse_point = self.plot_widget.plotItem.vb.mapSceneToView(pos)
+#             x, y = mouse_point.x(), mouse_point.y()
+
+#             # Update crosshair
+#             self.vline.setPos(x)
+#             self.hline.setPos(y)
+
+#             # Update coordinate label (positioned slightly above & right of cursor)
+#             self.label.setText(f"x: {x:.3f}\ny: {y:.3f}")
+#             self.label.setPos(x + 0.1, y + 0.3)  # small offset — adjust as needed
+
+#             # Show everything
+#             self.vline.show()
+#             self.hline.show()
+#             self.label.show()
+#         else:
+#             # Hide when mouse leaves plot area
+#             self.vline.hide()
+#             self.hline.hide()
+#             self.label.hide()
+
+
+# if __name__ == '__main__':
+#     # Optional: dark mode look (very popular)
+#     pg.setConfigOptions(
+#         background='k',
+#         foreground='w',
+#         antialias=True
+#     )
+
+#     app = QApplication(sys.argv)
+#     window = CrosshairDataCursor()
+#     window.show()
+#     sys.exit(app.exec())
+
+
+
 import sys
 import numpy as np
-from PySide6.QtWidgets import QApplication, QMainWindow, QToolBar
-from PySide6.QtGui import QIcon, QAction
 import pyqtgraph as pg
-from pyqtgraph.dockarea import DockArea, Dock
+from pyqtgraph.dockarea import Dock, DockArea
+from PySide6.QtWidgets import QApplication, QMainWindow
 
-app = QApplication(sys.argv)
-pg.setConfigOptions(antialias=True)
 
-win = QMainWindow()
-win.resize(1200, 800)
-win.setWindowTitle("PyQtGraph with Toolbar")
+class MultiPlotDataCursor(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("PyQtGraph — Multi-Plot Data Cursor in DockArea")
+        self.resize(1200, 800)
 
-# Central DockArea
-area = DockArea()
-win.setCentralWidget(area)
+        # === DockArea setup ===
+        self.dock_area = DockArea()
+        self.setCentralWidget(self.dock_area)
 
-# Create some example plots (as before)
-x = np.linspace(0, 10, 500)
-p1 = pg.PlotWidget(title="Sine Wave")
-p1.plot(x, np.sin(x))
-d1 = Dock("Sine", size=(600, 400))
-d1.addWidget(p1)
-area.addDock(d1)
+        # Create multiple docks with plots
+        self.plot1 = self.create_plot_dock("Plot 1 - Sine Wave")
+        self.plot2 = self.create_plot_dock("Plot 2 - Cosine Wave")
+        self.plot3 = self.create_plot_dock("Plot 3 - Noisy Signal")
 
-p2 = pg.PlotWidget(title="Cosine Wave")
-p2.plot(x, np.cos(x))
-p2.setXLink(p1)  # Link X-axes
-d2 = Dock("Cosine", size=(600, 400))
-d2.addWidget(p2)
-area.addDock(d2, 'bottom', d1)
+        # Arrange docks
+        self.dock_area.addDock(self.plot1['dock'], 'left')
+        self.dock_area.addDock(self.plot2['dock'], 'right', self.plot1['dock'])
+        self.dock_area.addDock(self.plot3['dock'], 'bottom', self.plot2['dock'])
 
-# === ADD TOOLBAR ===
-toolbar = win.addToolBar("Main Toolbar")
-# toolbar.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)  # Optional: text next to icon
+    def create_plot_dock(self, title: str):
+        """Factory to create a dock with plot + independent data cursor"""
+        dock = Dock(title)
+        plot_widget = pg.PlotWidget()
+        dock.addWidget(plot_widget)
 
-# Button 1: Clear all plots
-def clear_plots():
-    p1.clear()
-    p2.clear()
+        # Generate example data
+        x = np.linspace(0, 10, 500)
+        if title == "Plot 1 - Sine Wave":
+            y = np.sin(x * 2.3) * x
+        elif title == "Plot 2 - Cosine Wave":
+            y = np.cos(x * 1.8) * x**0.5
+        else:
+            y = np.sin(x) + np.random.normal(0, 0.5, len(x))
 
-clear_action = QAction(QIcon.fromTheme("edit-clear"), "Clear Plots", win)
-clear_action.setShortcut("Ctrl+L")
-clear_action.triggered.connect(clear_plots)
-toolbar.addAction(clear_action)
+        plot_widget.plot(x, y, pen=pg.mkPen('y', width=2))
 
-# Button 2: Reset view (auto-range)
-def reset_view():
-    p1.enableAutoRange()
-    p2.enableAutoRange()  # Since linked, one is enough, but safe
+        # Grid & labels
+        plot_widget.showGrid(x=True, y=True, alpha=0.4)
+        plot_widget.setLabel('left', 'Value')
+        plot_widget.setLabel('bottom', 'Time (s)')
 
-reset_action = QAction(QIcon.fromTheme("zoom-fit-best"), "Reset Zoom", win)
-reset_action.setShortcut("Ctrl+R")
-reset_action.triggered.connect(reset_view)
-toolbar.addAction(reset_action)
+        # === Independent data cursor for THIS plot ===
+        vline = pg.InfiniteLine(angle=90, movable=False, pen=pg.mkPen('r', width=1, style=pg.QtCore.Qt.DashLine))
+        hline = pg.InfiniteLine(angle=0, movable=False, pen=pg.mkPen('r', width=1, style=pg.QtCore.Qt.DashLine))
+        plot_widget.addItem(vline)
+        plot_widget.addItem(hline)
 
-# Button 3: Custom action example
-def print_message():
-    print("Toolbar button clicked!")
+        label = pg.TextItem(
+            text="",
+            color=(255, 255, 255),
+            anchor=(0, 1),
+            border=pg.mkPen('yellow', width=1),
+            fill=(0, 0, 0, 180)
+        )
+        plot_widget.addItem(label, ignoreBounds=True)
 
-custom_action = QAction("Say Hello", win)
-custom_action.triggered.connect(print_message)
-toolbar.addAction(custom_action)
+        # Hide by default
+        vline.hide()
+        hline.hide()
+        label.hide()
 
-# Separator and another button
-toolbar.addSeparator()
+        # Mouse tracking for THIS plot only
+        proxy = pg.SignalProxy(
+            plot_widget.scene().sigMouseMoved,
+            rateLimit=60,
+            slot=lambda evt: self.on_mouse_moved(evt, plot_widget, vline, hline, label)
+        )
 
-save_action = QAction(QIcon.fromTheme("document-save"), "Save Layout", win)
-def save_layout():
-    state = area.saveState()
-    with open("layout_state.bin", "wb") as f:
-        f.write(state)
-    print("Layout saved!")
+        return {'dock': dock, 'plot': plot_widget, 'proxy': proxy}  # return dict for reference if needed
 
-save_action.triggered.connect(save_layout)
-toolbar.addAction(save_action)
+    def on_mouse_moved(self, evt, plot_widget: pg.PlotWidget, vline, hline, label):
+        pos = evt[0]
 
-win.show()
-sys.exit(app.exec())
+        # Check if mouse is inside THIS plot's area
+        if plot_widget.sceneBoundingRect().contains(pos):
+            mouse_point = plot_widget.plotItem.vb.mapSceneToView(pos)
+            x, y = mouse_point.x(), mouse_point.y()
+
+            vline.setPos(x)
+            hline.setPos(y)
+
+            label.setText(f"x: {x:.3f}\ny: {y:.3f}")
+            label.setPos(x + 0.1, y + 0.3)
+
+            vline.show()
+            hline.show()
+            label.show()
+        else:
+            vline.hide()
+            hline.hide()
+            label.hide()
+
+
+if __name__ == '__main__':
+    pg.setConfigOptions(
+        background='k',
+        foreground='w',
+        antialias=True
+    )
+
+    app = QApplication(sys.argv)
+    window = MultiPlotDataCursor()
+    window.show()
+    sys.exit(app.exec())

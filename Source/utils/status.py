@@ -7,7 +7,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import (
     Qt, QPropertyAnimation, QEasingCurve
 )
-from win_tb import WinTB
+from .win_tb import WinTB
 
 class prog:
     def __init__(self, main_obj):

@@ -118,7 +118,7 @@ class Ui_OrionsApp(object):
         self.textEdit.setGeometry(QRect(10, 80, 391, 61))
         self.label_2 = QLabel(self.groupBox)
         self.label_2.setObjectName(u"label_2")
-        self.label_2.setGeometry(QRect(20, 60, 49, 16))
+        self.label_2.setGeometry(QRect(10, 60, 49, 16))
         self.groupBox_2 = QGroupBox(self.centralwidget)
         self.groupBox_2.setObjectName(u"groupBox_2")
         self.groupBox_2.setGeometry(QRect(0, 150, 411, 81))
