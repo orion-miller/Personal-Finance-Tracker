@@ -350,40 +350,9 @@ class MainWindow(QMainWindow):
             x, y = mouse_point.x(), mouse_point.y()
 
             # Update coordinate label (positioned slightly above & right of cursor)
-            label.setText(f"x: {x:.3f}\ny: {y:.3f}")
+            label.setText(f"y: {y:.3f}")
+            # label.setText(f"x: {x:.3f}\ny: {y:.3f}")            
             label.setPos(x, y)  # small offset — adjust as needed
-
-            # Show label
-            # self.ui.data_label.show()
-        # else:
-            # Hide when mouse leaves plot area
-            # self.ui.data_label.hide()  
-
-        # # Check if mouse is inside plot area
-        # if self.ui.graphBS1.sceneBoundingRect().contains(pos):
-        #     mouse_point = self.ui.graphBS1.plotItem.vb.mapSceneToView(pos)
-        #     x, y = mouse_point.x(), mouse_point.y()
-
-        #     self.ui.graphBS1.addItem(self.ui.data_label, ignoreBounds=True)
-
-        #     # # Update crosshair
-        #     # self.vline.setPos(x)
-        #     # self.hline.setPos(y)
-
-        #     # Update coordinate label (positioned slightly above & right of cursor)
-        #     self.ui.data_label.setText(f"x: {x:.3f}\ny: {y:.3f}")
-        #     self.ui.data_label.setPos(x + 0.1, y + 0.3)  # small offset — adjust as needed
-
-        #     # Show everything
-        #     # self.vline.show()
-        #     # self.hline.show()
-        #     self.ui.data_label.show()
-        # else:
-        #     # Hide when mouse leaves plot area
-        #     # self.vline.hide()
-        #     # self.hline.hide()
-        #     self.ui.data_label.hide()           
-
     #----------------------------------------------------------
     def on_tab_changed(self, index):
         tab_name = self.ui.tabWidget.tabText(index)
