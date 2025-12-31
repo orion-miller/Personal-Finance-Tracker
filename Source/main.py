@@ -37,10 +37,11 @@ from utils import plotting, status, calc_metrics
 class Properties:
     def __init__(self):
         self.APP_NAME = "Finance Tracker"          
-        self.APP_VERSION = "1.0"      
-        self.data_folder = "D:\\!Orion_Documents\\Financial\\!OM_Finance_Tracker" 
-        self.income_types = ["Work", "Investment", "Sales", "Rewards"] #could make editable through ui later
-        self.expense_types = ["Transfer", "Bills", "Groceries","Takeout","Car","Travel","Entertainment","Other"] #could make editable through ui later
+        self.APP_VERSION = "1.0"   
+        self.root_dir = os.path.dirname(os.path.abspath(__file__)) #directory the program is running from
+        self.working_dir = "C:\\" #directory for user data
+        self.income_types = ["Work", "Investment", "Sales", "Rewards"] 
+        self.expense_types = ["Transfer", "Bills", "Groceries","Takeout","Car","Travel","Entertainment","Other"] 
         self.income_expense_types = self.income_types + self.expense_types   
         self.bs_format = pd.DataFrame({
             "Item":   ["New"],
@@ -77,11 +78,16 @@ class MainWindow(QMainWindow):
         #Properties
         self.ps = Properties()
 
+        os.chdir(self.ps.root_dir)  #set working directory to program directory
+
         #initialize data base with blank template
         MainWindow.db_init(self)
 
-        try: #load db file from working directory if present, to overwrite blank template
-            self.ps.db = np.load(os.path.join(self.ps.data_folder,"db.npz"), allow_pickle=True)["db"].item()
+        try: 
+            #load working dir from settings file if present
+            self.ps.working_dir = np.load(os.path.join(self.ps.root_dir,"settings.npz"), allow_pickle=True)["working_dir"].item() 
+            #load db file from working directory if present, to overwrite blank template
+            self.ps.db = np.load(os.path.join(self.ps.working_dir,"db.npz"), allow_pickle=True)["db"].item()
         except:
             pass
 
@@ -292,11 +298,15 @@ class MainWindow(QMainWindow):
         folder = QFileDialog.getExistingDirectory(
             parent=self,                                   # your MainWindow or widget
             caption="Choose a folder",                     # title bar text
-            dir=self.ps.data_folder                                      
+            dir=self.ps.working_dir                                      
         )
 
         if folder:                                         # user clicked OK (not Cancel)
-            self.ps.data_folder = folder 
+            self.ps.working_dir = folder 
+
+            #write out to settings file
+            np.savez_compressed(os.path.join(self.ps.root_dir,"settings.npz"), working_dir=self.ps.working_dir)
+
             status.msg.show(self, f"Workspace directory set: {folder}")                           
     #----------------------------------------------------------
     def show_info(self):
@@ -468,6 +478,7 @@ class MainWindow(QMainWindow):
              
     #----------------------------------------------------------
     def load_month(self):
+        #load all data for selected year and month from database and sync to UI components
 
         #create blank entries in database if month does not exist - should be able to remove this later
         if self.ps.year_sel not in self.ps.db:
@@ -554,7 +565,7 @@ class MainWindow(QMainWindow):
         calc_metrics(self, self.ps.year_sel, self.ps.month_sel)
 
         #write out to file
-        np.savez_compressed(os.path.join(self.ps.data_folder,"db.npz"), db=self.ps.db)
+        np.savez_compressed(os.path.join(self.ps.working_dir,"db.npz"), db=self.ps.db)
 
         status.msg.show(self, f"{self.ui.comboBox_month.currentText()} {self.ps.year_sel} data saved")  
     #----------------------------------------------------------
@@ -592,7 +603,7 @@ class MainWindow(QMainWindow):
         file_path, _ = QFileDialog.getOpenFileName(
             self,
             "Select CSV File",
-            self.ps.data_folder,
+            self.ps.working_dir,
             "CSV Files (*.csv)"
         )
 

@@ -54,6 +54,7 @@ class ComboBoxDelegate(QStyledItemDelegate):
         combo = QComboBox(parent)
         combo.addItems(self.options)
         combo.setEditable(False)  # optional: prevent typing
+        combo.setMaxVisibleItems(15)
         return combo
 
     def setEditorData(self, editor: QComboBox, index):
