@@ -106,6 +106,7 @@ class MainWindow(QMainWindow):
         # self.ui.comboBox_month.setItemData([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])        
         self.ui.comboBox_year.setCurrentText("2025")
         self.ui.comboBox_month.setCurrentText("Dec")
+        self.ui.spinBox_month.setValue(-1*self.ui.comboBox_month.currentIndex()) #needs to match the index (*-1) of the combo box above       
         self.ui.comboBox_year_2.addItems(self.ps.year_list)        
         self.ui.comboBox_month_2.addItems(self.ps.month_list)
         # self.ui.comboBox_month_2.setItemData(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)          
@@ -284,6 +285,7 @@ class MainWindow(QMainWindow):
         self.ui.tabWidget.currentChanged.connect(self.on_tab_changed)
         self.ui.tabWidget_2.currentChanged.connect(self.on_tab_changed_2)
         self.ui.comboBox_month.currentIndexChanged.connect(self.month_changed)
+        self.ui.spinBox_month.valueChanged.connect(self.month_spinbox_changed)        
         self.ui.comboBox_month_2.currentIndexChanged.connect(self.month_changed)    
         self.ui.comboBox_month_3.currentIndexChanged.connect(self.month_changed)
         self.ui.comboBox_year.currentIndexChanged.connect(self.year_changed)
@@ -397,10 +399,23 @@ class MainWindow(QMainWindow):
 
         self.ps.db[self.ps.year_sel][self.ps.month_sel]["bs"] = self.ps.db[year_prev][month_prev]["bs"].copy()
 
+        #balance sheet setup - copied from load_month
+        if len(self.ps.db[self.ps.year_sel][self.ps.month_sel]["bs"]) > 0:
+            # Show bs table
+            df = self.ps.db[self.ps.year_sel][self.ps.month_sel]["bs"]
+            model = TableModel(df)
+            self.ui.tableBS.setModel(model)
+            self.ui.tableBS.resizeColumnsToContents()   
+
+            # Set column widths
+            BSheader = self.ui.tableBS.horizontalHeader()
+            BSheader.setSectionResizeMode(0, QHeaderView.Stretch)  #"item" column stretches 
+            self.ui.tableBS.setColumnWidth(1, 140)                 #fixed width         
+        else:
+            #clear table
+            self.ui.tableBS.setModel(TableModel(pd.DataFrame()))
+
         status.msg.show(self, "Previous month copied") 
-
-        #may need to call load month here
-
     #----------------------------------------------------------
     def add_bs_row(self):  
         #add row to balance sheet table
@@ -498,6 +513,14 @@ class MainWindow(QMainWindow):
                 "notes": ""    #general notes
                 }         
 
+        #set ui elements with existing data
+        #notes setup
+        try:           
+            self.ui.textEdit.setPlainText(self.ps.db[self.ps.year_sel][self.ps.month_sel]["notes"])  
+        except:
+            #clear notes
+            self.ui.textEdit.setPlainText("")
+
         #balance sheet setup
         if len(self.ps.db[self.ps.year_sel][self.ps.month_sel]["bs"]) > 0:
             # Show bs table
@@ -515,10 +538,7 @@ class MainWindow(QMainWindow):
             self.ui.tableBS.setModel(TableModel(pd.DataFrame()))
 
         #income + expense setup
-        if len(self.ps.db[self.ps.year_sel][self.ps.month_sel]["ie"]) > 0:
-            #set ui elements with existing data
-            self.ui.textEdit.setPlainText(self.ps.db[self.ps.year_sel][self.ps.month_sel]["notes"])  
-         
+        if len(self.ps.db[self.ps.year_sel][self.ps.month_sel]["ie"]) > 0:        
             # Show ie table
             first_key = list(self.ps.db[self.ps.year_sel][self.ps.month_sel]["ie"].keys())[0]
             df = self.ps.db[self.ps.year_sel][self.ps.month_sel]["ie"][first_key]
@@ -537,8 +557,6 @@ class MainWindow(QMainWindow):
             self.ui.sheetDropdown.addItems(self.ps.db[self.ps.year_sel][self.ps.month_sel]["ie"].keys())
             self.ui.sheetDropdown.setCurrentIndex(0)
         else:
-            #clear notes
-            self.ui.textEdit.setPlainText("")
             #clear table
             self.ui.sheetTable.setModel(TableModel(pd.DataFrame()))
             #clear dropdown
@@ -578,7 +596,14 @@ class MainWindow(QMainWindow):
         self.ps.month_sel = str(self.ui.comboBox_month.currentIndex() + 1)
         self.ps.month_p1 = str(self.ui.comboBox_month_2.currentIndex() + 1)
         self.ps.month_p2 = str(self.ui.comboBox_month_3.currentIndex() + 1)  
+
+        self.ui.spinBox_month.setValue(-1*self.ui.comboBox_month.currentIndex()) #needs to match the index (*-1) of the combo box above 
     #----------------------------------------------------------
+    def month_spinbox_changed(self):
+        self.ui.comboBox_month.setCurrentIndex(-1*self.ui.spinBox_month.value())
+
+        self.ps.month_sel = str(self.ui.comboBox_month.currentIndex() + 1)        
+    #----------------------------------------------------------    
     def changed_csv(self):
         if self.ui.sheetDropdown.count() > 0:
             sheet = self.ps.db[self.ps.year_sel][self.ps.month_sel]["ie"][self.ui.sheetDropdown.currentText()]

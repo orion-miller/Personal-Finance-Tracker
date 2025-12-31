@@ -16,10 +16,11 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QIcon, QImage, QKeySequence, QLinearGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
-from PySide6.QtWidgets import (QApplication, QComboBox, QGroupBox, QHeaderView,
-    QLabel, QMainWindow, QMenu, QMenuBar,
-    QPushButton, QSizePolicy, QStatusBar, QTabWidget,
-    QTableView, QTextEdit, QToolBar, QWidget)
+from PySide6.QtWidgets import (QAbstractSpinBox, QApplication, QComboBox, QGroupBox,
+    QHeaderView, QLabel, QMainWindow, QMenu,
+    QMenuBar, QPushButton, QSizePolicy, QSpinBox,
+    QStatusBar, QTabWidget, QTableView, QTextEdit,
+    QToolBar, QWidget)
 
 from pyqtgraph.dockarea import DockArea
 
@@ -118,7 +119,20 @@ class Ui_OrionsApp(object):
         self.textEdit.setGeometry(QRect(10, 80, 391, 61))
         self.label_2 = QLabel(self.groupBox)
         self.label_2.setObjectName(u"label_2")
-        self.label_2.setGeometry(QRect(20, 60, 49, 16))
+        self.label_2.setGeometry(QRect(10, 60, 49, 16))
+        self.spinBox_month = QSpinBox(self.groupBox)
+        self.spinBox_month.setObjectName(u"spinBox_month")
+        self.spinBox_month.setGeometry(QRect(173, 20, 33, 24))
+        self.spinBox_month.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.UpDownArrows)
+        self.spinBox_month.setMinimum(-11)
+        self.spinBox_month.setMaximum(11)
+        self.spinBox_month.raise_()
+        self.pushButton_loadmonth.raise_()
+        self.pushButton_savemonth.raise_()
+        self.comboBox_year.raise_()
+        self.comboBox_month.raise_()
+        self.textEdit.raise_()
+        self.label_2.raise_()
         self.groupBox_2 = QGroupBox(self.centralwidget)
         self.groupBox_2.setObjectName(u"groupBox_2")
         self.groupBox_2.setGeometry(QRect(0, 150, 411, 81))
@@ -127,10 +141,10 @@ class Ui_OrionsApp(object):
         self.groupBox_2.setChecked(False)
         self.label_3 = QLabel(self.groupBox_2)
         self.label_3.setObjectName(u"label_3")
-        self.label_3.setGeometry(QRect(10, 20, 49, 16))
+        self.label_3.setGeometry(QRect(10, 22, 49, 16))
         self.label_4 = QLabel(self.groupBox_2)
         self.label_4.setObjectName(u"label_4")
-        self.label_4.setGeometry(QRect(10, 50, 49, 16))
+        self.label_4.setGeometry(QRect(10, 52, 49, 16))
         self.pushButton_refresh = QPushButton(self.groupBox_2)
         self.pushButton_refresh.setObjectName(u"pushButton_refresh")
         self.pushButton_refresh.setGeometry(QRect(320, 20, 79, 24))

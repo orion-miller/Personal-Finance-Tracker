@@ -337,115 +337,83 @@ from PySide6.QtWidgets import (
 
 
 
+# Copyright (C) 2022 The Qt Company Ltd.
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+# from __future__ import annotations
+
 import sys
-import numpy as np
-import pyqtgraph as pg
-from pyqtgraph.dockarea import Dock, DockArea
-from PySide6.QtWidgets import QApplication, QMainWindow
+
+from PySide6.QtWidgets import (QApplication, QStyledItemDelegate, QSpinBox,
+                               QTableView)
+from PySide6.QtGui import QStandardItemModel, Qt
+from PySide6.QtCore import QModelIndex
+
+"""PySide6 port of the widgets/itemviews/spinboxdelegate from Qt v6.x"""
 
 
-class MultiPlotDataCursor(QMainWindow):
-    def __init__(self):
-        super().__init__()
-        self.setWindowTitle("PyQtGraph — Multi-Plot Data Cursor in DockArea")
-        self.resize(1200, 800)
+#! [0]
+class SpinBoxDelegate(QStyledItemDelegate):
+    """A delegate that allows the user to change integer values from the model
+       using a spin box widget. """
 
-        # === DockArea setup ===
-        self.dock_area = DockArea()
-        self.setCentralWidget(self.dock_area)
+#! [0]
+    def __init__(self, parent=None):
+        super().__init__(parent)
+#! [0]
 
-        # Create multiple docks with plots
-        self.plot1 = self.create_plot_dock("Plot 1 - Sine Wave")
-        self.plot2 = self.create_plot_dock("Plot 2 - Cosine Wave")
-        self.plot3 = self.create_plot_dock("Plot 3 - Noisy Signal")
+#! [1]
+    def createEditor(self, parent, option, index):
+        editor = QSpinBox(parent)
+        editor.setFrame(False)
+        editor.setMinimum(0)
+        editor.setMaximum(100)
+        return editor
+#! [1]
 
-        # Arrange docks
-        self.dock_area.addDock(self.plot1['dock'], 'left')
-        self.dock_area.addDock(self.plot2['dock'], 'right', self.plot1['dock'])
-        self.dock_area.addDock(self.plot3['dock'], 'bottom', self.plot2['dock'])
+#! [2]
+    def setEditorData(self, editor, index):
+        value = index.model().data(index, Qt.ItemDataRole.EditRole)
+        editor.setValue(value)
+#! [2]
 
-    def create_plot_dock(self, title: str):
-        """Factory to create a dock with plot + independent data cursor"""
-        dock = Dock(title)
-        plot_widget = pg.PlotWidget()
-        dock.addWidget(plot_widget)
+#! [3]
+    def setModelData(self, editor, model, index):
+        editor.interpretText()
+        value = editor.value()
+        model.setData(index, value, Qt.ItemDataRole.EditRole)
+#! [3]
 
-        # Generate example data
-        x = np.linspace(0, 10, 500)
-        if title == "Plot 1 - Sine Wave":
-            y = np.sin(x * 2.3) * x
-        elif title == "Plot 2 - Cosine Wave":
-            y = np.cos(x * 1.8) * x**0.5
-        else:
-            y = np.sin(x) + np.random.normal(0, 0.5, len(x))
-
-        plot_widget.plot(x, y, pen=pg.mkPen('y', width=2))
-
-        # Grid & labels
-        plot_widget.showGrid(x=True, y=True, alpha=0.4)
-        plot_widget.setLabel('left', 'Value')
-        plot_widget.setLabel('bottom', 'Time (s)')
-
-        # === Independent data cursor for THIS plot ===
-        vline = pg.InfiniteLine(angle=90, movable=False, pen=pg.mkPen('r', width=1, style=pg.QtCore.Qt.DashLine))
-        hline = pg.InfiniteLine(angle=0, movable=False, pen=pg.mkPen('r', width=1, style=pg.QtCore.Qt.DashLine))
-        plot_widget.addItem(vline)
-        plot_widget.addItem(hline)
-
-        label = pg.TextItem(
-            text="",
-            color=(255, 255, 255),
-            anchor=(0, 1),
-            border=pg.mkPen('yellow', width=1),
-            fill=(0, 0, 0, 180)
-        )
-        plot_widget.addItem(label, ignoreBounds=True)
-
-        # Hide by default
-        vline.hide()
-        hline.hide()
-        label.hide()
-
-        # Mouse tracking for THIS plot only
-        proxy = pg.SignalProxy(
-            plot_widget.scene().sigMouseMoved,
-            rateLimit=60,
-            slot=lambda evt: self.on_mouse_moved(evt, plot_widget, vline, hline, label)
-        )
-
-        return {'dock': dock, 'plot': plot_widget, 'proxy': proxy}  # return dict for reference if needed
-
-    def on_mouse_moved(self, evt, plot_widget: pg.PlotWidget, vline, hline, label):
-        pos = evt[0]
-
-        # Check if mouse is inside THIS plot's area
-        if plot_widget.sceneBoundingRect().contains(pos):
-            mouse_point = plot_widget.plotItem.vb.mapSceneToView(pos)
-            x, y = mouse_point.x(), mouse_point.y()
-
-            vline.setPos(x)
-            hline.setPos(y)
-
-            label.setText(f"x: {x:.3f}\ny: {y:.3f}")
-            label.setPos(x + 0.1, y + 0.3)
-
-            vline.show()
-            hline.show()
-            label.show()
-        else:
-            vline.hide()
-            hline.hide()
-            label.hide()
+#! [4]
+    def updateEditorGeometry(self, editor, option, index):
+        editor.setGeometry(option.rect)
+#! [4]
 
 
+#! [main0]
 if __name__ == '__main__':
-    pg.setConfigOptions(
-        background='k',
-        foreground='w',
-        antialias=True
-    )
-
     app = QApplication(sys.argv)
-    window = MultiPlotDataCursor()
-    window.show()
+
+    model = QStandardItemModel(4, 2)
+    tableView = QTableView()
+    tableView.setModel(model)
+
+    delegate = SpinBoxDelegate()
+    tableView.setItemDelegate(delegate)
+#! [main0]
+
+    tableView.horizontalHeader().setStretchLastSection(True)
+
+#! [main1]
+    for row in range(4):
+        for column in range(2):
+            index = model.index(row, column, QModelIndex())
+            value = (row + 1) * (column + 1)
+            model.setData(index, value)
+#! [main1] //# [main2]
+#! [main2]
+
+#! [main3]
+    tableView.setWindowTitle("Spin Box Delegate")
+    tableView.show()
     sys.exit(app.exec())
+#! [main3]
