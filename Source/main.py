@@ -58,7 +58,7 @@ class Properties:
                 }           
         }   
         }
-        self.year_list = ["2020", "2021", "2022", "2023", "2024", "2025"] #make editable through ui later
+        self.year_list = ["2020", "2021", "2022", "2023", "2024", "2025", "2026"] #make editable through ui later
         self.month_list = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"] #make editable through ui later
         self.year_sel = "2025"
         self.month_sel = "12"
@@ -89,7 +89,11 @@ class MainWindow(QMainWindow):
             #load db file from working directory if present, to overwrite blank template
             self.ps.db = np.load(os.path.join(self.ps.working_dir,"db.npz"), allow_pickle=True)["db"].item()
         except:
-            pass
+            QMessageBox.warning(
+                self,
+                "Database Warning",
+                f'Could not find the database file "db.npz" in the working directory: {self.ps.working_dir} \n\nCreated a new blank database file. If you have an existing database, please set the working directory to its location and restart the program.'
+            )
 
         #Set initial component properties
         self.setWindowTitle(f"{self.ps.APP_NAME} {self.ps.APP_VERSION}")
@@ -362,8 +366,8 @@ class MainWindow(QMainWindow):
             x, y = mouse_point.x(), mouse_point.y()
 
             # Update coordinate label (positioned slightly above & right of cursor)
-            label.setText(f"y: {y:.3f}")
-            # label.setText(f"x: {x:.3f}\ny: {y:.3f}")            
+            label.setText(f"y: {y:.2f}")
+            # label.setText(f"x: {x:.2f}\ny: {y:.3f}")            
             label.setPos(x, y)  # small offset — adjust as needed
     #----------------------------------------------------------
     def on_tab_changed(self, index):
