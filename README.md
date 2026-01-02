@@ -12,7 +12,7 @@ The 2 main features of the program are:
 
 For both the balance sheet and income expense sheet, data is tracked by month, and basic metrics are calculated like total assets, total debts, total income, total expenses, etc. Data is visualized using [PyQtGraph](https://pyqtgraph.readthedocs.io/en/latest/#) using flexible dock areas, which allows the plots to be interactively resized or detached from the main window.
 
-The programs finance data is saved to a database file using compressed Numpy binary format. Use the 'Workspace Directory' feature to define where this will be kept. 
+The programs finance data is saved to a database file using compressed Numpy binary format. Use the 'Workspace Directory' feature to define where this will be kept. In the repo the "sample data" folder includes some fictional data that can be read in as a demo.
 
 ### Running From EXE
 Run ```pyside_app_demo.exe```
