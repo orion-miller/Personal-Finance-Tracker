@@ -92,7 +92,7 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(
                 self,
                 "Database Warning",
-                f'Could not find the database file "db.npz" in the working directory: {self.ps.working_dir} \n\nCreated a new blank database file. If you have an existing database, please set the working directory to its location and restart the program.'
+                f'Could not find the database file "db.npz" in the working directory: {self.ps.working_dir} \n\Initialized a new blank database. If you have an existing database, please set the working directory to its location and restart the program.'
             )
 
         #Set initial component properties
@@ -301,13 +301,22 @@ class MainWindow(QMainWindow):
 
     #----------------------------------------------------------
     def pick_folder(self):
-        folder = QFileDialog.getExistingDirectory(
-            parent=self,                                   # your MainWindow or widget
-            caption="Choose a folder",                     # title bar text
-            dir=self.ps.working_dir                                      
-        )
+        #open file dialog to select working directory
+        
+        try:
+            folder = QFileDialog.getExistingDirectory(
+                parent=self,                                   
+                caption="Choose a folder",                     
+                dir=self.ps.working_dir                                      
+            )
+        except: #fall back on C drive root if dir not valid
+            folder = QFileDialog.getExistingDirectory(
+                parent=self,                                   
+                caption="Choose a folder",                     
+                dir="C:\\"                                      
+            )
 
-        if folder:                                         # user clicked OK (not Cancel)
+        if folder: # user clicked OK (not Cancel)
             self.ps.working_dir = folder 
 
             #write out to settings file

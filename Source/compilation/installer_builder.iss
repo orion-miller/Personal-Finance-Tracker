@@ -2,18 +2,29 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 ; Non-commercial use only
 
+; See this guide for basics on configuring this file https://www.youtube.com/watch?v=4s4rP9GYH0o
+
+; Must set repo dir below for any individual machine before running this script. D o not include slash at end
+#define MyRepoDir = "D:\!Orion_Programs\!Source_Controlled\Finances"
+#define MyAppName = "Finance Tracker"
+; Keep the version below in sync with the value defined in the source code
+#define MyAppVersion = "1.0"
+#define MyAppPublisher = "OME"
+#define MyAppURL = "https://github.com/orion-miller/Personal-Finance-Tracker"
+
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 AppId={{227840D2-5A84-4BEF-B16D-2D066F7A2693}
-AppName=My Program
-AppVersion=1.0
-;AppVerName=My Program 1.0
-AppPublisher=OME
-AppPublisherURL=https://www.example.com/
-AppSupportURL=https://www.example.com/
-AppUpdatesURL=https://www.example.com/
-DefaultDirName={autopf}\My_Program
+; SignTool= <this can be used to add a certificate for the program to be trusted
+AppName={#MyAppName}
+AppVersion={#MyAppVersion}
+VersionInfoVersion={#MyAppVersion}.0.0
+AppPublisher={#MyAppPublisher}
+AppPublisherURL={#MyAppURL}
+AppSupportURL={#MyAppURL}
+AppUpdatesURL={#MyAppURL}
+DefaultDirName={autopf}\{#MyAppName}
 DisableDirPage=yes
 UninstallDisplayIcon={app}\pyside_app_demo.exe
 ; "ArchitecturesAllowed=x64compatible" specifies that Setup cannot run
@@ -27,8 +38,8 @@ ArchitecturesInstallIn64BitMode=x64compatible
 DisableProgramGroupPage=yes
 ; Uncomment the following line to run in non administrative install mode (install for current user only).
 ;PrivilegesRequired=lowest
-OutputBaseFilename=mysetup
-SetupIconFile=D:\!Orion_Programs\!Source_Controlled\Finances\Source\assets\finance_mode_24dp_75FB4C_FILL0_wght400_GRAD0_opsz24.ico
+OutputBaseFilename={#MyAppName} {#MyAppVersion} Installer
+SetupIconFile={#MyRepoDir}\source\assets\finance_mode_24dp_75FB4C_FILL0_wght400_GRAD0_opsz24.ico
 SolidCompression=yes
 WizardStyle=modern dark
 
@@ -39,13 +50,13 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "D:\!Orion_Programs\!Source_Controlled\Finances\Source\pyside_app_demo.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\!Orion_Programs\!Source_Controlled\Finances\Source\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#MyRepoDir}\build\pyside_app_demo.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#MyRepoDir}\source\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
-Name: "{autoprograms}\My Program"; Filename: "{app}\pyside_app_demo.exe"
-Name: "{autodesktop}\My Program"; Filename: "{app}\pyside_app_demo.exe"; Tasks: desktopicon
+Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\pyside_app_demo.exe"
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\pyside_app_demo.exe"; Tasks: desktopicon
 
 [Run]
 Filename: "{app}\pyside_app_demo.exe"; Description: "{cm:LaunchProgram,My Program}"; Flags: nowait postinstall skipifsilent
