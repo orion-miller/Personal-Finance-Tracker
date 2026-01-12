@@ -26,6 +26,7 @@ from pyqtgraph.dockarea import DockArea, Dock
 import pandas as pd
 import numpy as np
 import ollama 
+# from pydiary import Diary
 
 #external fcns
 from utils.ui_models import TableModel, ComboBoxDelegate
@@ -75,12 +76,18 @@ class MainWindow(QMainWindow):
         self.ui.setupUi(self)        
 
         #-------------------Startup tasks-------------------
-        #Properties
+
+        #Import properties
         self.ps = Properties()
 
-        os.chdir(self.ps.root_dir)  #set working directory to program directory
+        #set working directory to program directory
+        os.chdir(self.ps.root_dir)  
 
-        #initialize data base with blank template
+        # start logging
+        # diary = Diary("log.txt")
+        # diary.on() 
+
+        #initialize database with blank template
         MainWindow.db_init(self)
 
         try: 
@@ -302,7 +309,7 @@ class MainWindow(QMainWindow):
     #----------------------------------------------------------
     def pick_folder(self):
         #open file dialog to select working directory
-        
+
         try:
             folder = QFileDialog.getExistingDirectory(
                 parent=self,                                   

@@ -235,185 +235,95 @@ from PySide6.QtWidgets import (
 
 
 
-# import sys
-# import numpy as np
-# import pyqtgraph as pg
-# from PySide6.QtWidgets import QApplication, QMainWindow
-
-
-# class CrosshairDataCursor(QMainWindow):
-#     def __init__(self):
-#         super().__init__()
-#         self.setWindowTitle("PyQtGraph — Data Cursor / Crosshair")
-#         self.resize(900, 650)
-
-#         # === Plot setup ===
-#         self.plot_widget = pg.PlotWidget()
-#         self.setCentralWidget(self.plot_widget)
-
-#         # Example data
-#         x = np.linspace(0, 10, 500)
-#         y = np.sin(x * 2.3) * x + np.random.normal(0, 0.4, len(x))
-
-#         self.curve = self.plot_widget.plot(
-#             x, y,
-#             pen=pg.mkPen('y', width=1.5),
-#             name="Noisy signal"
-#         )
-
-#         # Grid & labels
-#         self.plot_widget.showGrid(x=True, y=True, alpha=0.4)
-#         self.plot_widget.setLabel('left', 'Value')
-#         self.plot_widget.setLabel('bottom', 'Time (s)')
-
-#         # === Crosshair elements ===
-#         self.vline = pg.InfiniteLine(angle=90, movable=False, pen=pg.mkPen('r', width=1, style=pg.QtCore.Qt.DashLine))
-#         self.hline = pg.InfiniteLine(angle=0,  movable=False, pen=pg.mkPen('r', width=1, style=pg.QtCore.Qt.DashLine))
-
-#         self.plot_widget.addItem(self.vline)
-#         self.plot_widget.addItem(self.hline)
-
-#         # Label for coordinates (will follow mouse)
-#         self.label = pg.TextItem(
-#             text="",
-#             color=(255, 255, 255),
-#             anchor=(0, 1),          # top-left corner of text
-#             border=pg.mkPen('yellow', width=1),
-#             fill=(0, 0, 0, 180)     # semi-transparent black background
-#         )
-#         self.plot_widget.addItem(self.label, ignoreBounds=True)
-
-#         # Hide by default
-#         self.vline.hide()
-#         self.hline.hide()
-#         self.label.hide()
-
-#         # === Mouse tracking ===
-#         self.proxy = pg.SignalProxy(
-#             self.plot_widget.scene().sigMouseMoved,
-#             rateLimit=60,           # max 60 updates/sec — smooth but not CPU killer
-#             slot=self.on_mouse_moved
-#         )
-
-#     def on_mouse_moved(self, evt):
-#         pos = evt[0]  # position in scene coordinates
-
-#         # Check if mouse is inside plot area
-#         if self.plot_widget.sceneBoundingRect().contains(pos):
-#             mouse_point = self.plot_widget.plotItem.vb.mapSceneToView(pos)
-#             x, y = mouse_point.x(), mouse_point.y()
-
-#             # Update crosshair
-#             self.vline.setPos(x)
-#             self.hline.setPos(y)
-
-#             # Update coordinate label (positioned slightly above & right of cursor)
-#             self.label.setText(f"x: {x:.3f}\ny: {y:.3f}")
-#             self.label.setPos(x + 0.1, y + 0.3)  # small offset — adjust as needed
-
-#             # Show everything
-#             self.vline.show()
-#             self.hline.show()
-#             self.label.show()
-#         else:
-#             # Hide when mouse leaves plot area
-#             self.vline.hide()
-#             self.hline.hide()
-#             self.label.hide()
-
-
-# if __name__ == '__main__':
-#     # Optional: dark mode look (very popular)
-#     pg.setConfigOptions(
-#         background='k',
-#         foreground='w',
-#         antialias=True
-#     )
-
-#     app = QApplication(sys.argv)
-#     window = CrosshairDataCursor()
-#     window.show()
-#     sys.exit(app.exec())
-
-
-
-# Copyright (C) 2022 The Qt Company Ltd.
-# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
-# from __future__ import annotations
-
+import logging
 import sys
-
-from PySide6.QtWidgets import (QApplication, QStyledItemDelegate, QSpinBox,
-                               QTableView)
-from PySide6.QtGui import QStandardItemModel, Qt
-from PySide6.QtCore import QModelIndex
-
-"""PySide6 port of the widgets/itemviews/spinboxdelegate from Qt v6.x"""
+from pathlib import Path
+from PySide6.QtCore import Qt, QTimer
+from PySide6.QtWidgets import (
+    QApplication, QMainWindow, QTextEdit, QVBoxLayout, QWidget, QPushButton
+)
 
 
-#! [0]
-class SpinBoxDelegate(QStyledItemDelegate):
-    """A delegate that allows the user to change integer values from the model
-       using a spin box widget. """
+class QtLogHandler(logging.Handler):
+    """Thread-safe handler that appends messages to QTextEdit via timer/queued connection"""
+    def __init__(self, text_edit: QTextEdit):
+        super().__init__()
+        self.text_edit = text_edit
+        self.queue = []
+        # Use a very short timer to batch & update GUI in main thread
+        self.timer = QTimer()
+        self.timer.setInterval(50)           # ~20 updates/sec max
+        self.timer.timeout.connect(self._flush_queue)
+        self.timer.start()
 
-#! [0]
-    def __init__(self, parent=None):
-        super().__init__(parent)
-#! [0]
+    def emit(self, record):
+        msg = self.format(record)
+        self.queue.append(msg)
+        # No direct GUI write here → safe from any thread
 
-#! [1]
-    def createEditor(self, parent, option, index):
-        editor = QSpinBox(parent)
-        editor.setFrame(False)
-        editor.setMinimum(0)
-        editor.setMaximum(100)
-        return editor
-#! [1]
+    def _flush_queue(self):
+        if not self.queue:
+            return
+        text = "".join(self.queue)
+        self.queue.clear()
 
-#! [2]
-    def setEditorData(self, editor, index):
-        value = index.model().data(index, Qt.ItemDataRole.EditRole)
-        editor.setValue(value)
-#! [2]
-
-#! [3]
-    def setModelData(self, editor, model, index):
-        editor.interpretText()
-        value = editor.value()
-        model.setData(index, value, Qt.ItemDataRole.EditRole)
-#! [3]
-
-#! [4]
-    def updateEditorGeometry(self, editor, option, index):
-        editor.setGeometry(option.rect)
-#! [4]
+        self.text_edit.moveCursor(QtGui.QTextCursor.End)
+        self.text_edit.insertPlainText(text)
+        self.text_edit.ensureCursorVisible()
 
 
-#! [main0]
-if __name__ == '__main__':
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Diary-like logging demo")
+        widget = QWidget()
+        self.setCentralWidget(widget)
+        layout = QVBoxLayout(widget)
+
+        self.log_view = QTextEdit()
+        self.log_view.setReadOnly(True)
+        layout.addWidget(self.log_view)
+
+        btn = QPushButton("Run long task")
+        btn.clicked.connect(self.run_demo)
+        layout.addWidget(btn)
+
+        # Setup logging once
+        self.setup_logging()
+
+    def setup_logging(self):
+        logger = logging.getLogger()           # root logger
+        logger.setLevel(logging.INFO)
+
+        # File handler (always safe)
+        file_handler = logging.FileHandler("app_diary_2026.log", mode="a", encoding="utf-8")
+        file_handler.setFormatter(logging.Formatter("%(asctime)s  %(message)s"))
+        logger.addHandler(file_handler)
+
+        # GUI handler
+        qt_handler = QtLogHandler(self.log_view)
+        qt_handler.setFormatter(logging.Formatter("%(message)s"))
+        logger.addHandler(qt_handler)
+
+        # Optional: also see output in terminal
+        stream_handler = logging.StreamHandler(sys.stdout)
+        stream_handler.setFormatter(logging.Formatter("%(message)s"))
+        logger.addHandler(stream_handler)
+
+    def run_demo(self):
+        import time
+        logger = logging.getLogger()
+
+        logger.info("Starting long operation…")
+        for i in range(1, 21):
+            time.sleep(0.4)                    # simulate work
+            logger.info(f"Step {i:02d}/20  –  {i*5}%")
+        logger.info("Done!")
+
+
+if __name__ == "__main__":
     app = QApplication(sys.argv)
-
-    model = QStandardItemModel(4, 2)
-    tableView = QTableView()
-    tableView.setModel(model)
-
-    delegate = SpinBoxDelegate()
-    tableView.setItemDelegate(delegate)
-#! [main0]
-
-    tableView.horizontalHeader().setStretchLastSection(True)
-
-#! [main1]
-    for row in range(4):
-        for column in range(2):
-            index = model.index(row, column, QModelIndex())
-            value = (row + 1) * (column + 1)
-            model.setData(index, value)
-#! [main1] //# [main2]
-#! [main2]
-
-#! [main3]
-    tableView.setWindowTitle("Spin Box Delegate")
-    tableView.show()
+    window = MainWindow()
+    window.resize(700, 500)
+    window.show()
     sys.exit(app.exec())
-#! [main3]
