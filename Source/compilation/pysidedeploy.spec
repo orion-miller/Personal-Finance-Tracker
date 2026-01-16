@@ -21,7 +21,7 @@ icon = C:\Users\orion\AppData\Local\Programs\Python\Python310\Lib\site-packages\
 [python]
 
 # python path
-python_path = C:\Users\orion\AppData\Local\Programs\Python\Python310\python.exe
+python_path = D:\!Orion_Programs\!Source_Controlled\Finances\source\.venv\Scripts\python.exe
 
 # python packages to install
 packages = Nuitka==2.7.11

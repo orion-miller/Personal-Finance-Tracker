@@ -1,10 +1,10 @@
-#built in modules
+#Built in modules
 import sys
 import os
 from pathlib import Path
 import ctypes
 
-#GUI modules
+#Installed modules
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QFileDialog, QMessageBox,
     QStyledItemDelegate, QComboBox, QProgressBar, QGraphicsOpacityEffect,
@@ -17,18 +17,15 @@ from PySide6.QtCore import (
     QPropertyAnimation, QEasingCurve
 )
 from PySide6.QtGui import QIcon, QAction
-from mainwindow import Ui_OrionsApp
+from ui.mainwindow import Ui_OrionsApp
 import PySide6
 import pyqtgraph as pg
 from pyqtgraph.dockarea import DockArea, Dock
-
-#other modules
 import pandas as pd
 import numpy as np
 import ollama 
-# from pydiary import Diary
 
-#external fcns
+#Project modules, functions
 from utils.ui_models import TableModel, ComboBoxDelegate
 from utils import plotting, status, calc_metrics
 
@@ -39,7 +36,7 @@ class Properties:
     def __init__(self):
         self.APP_NAME = "Finance Tracker"          
         self.APP_VERSION = "1.0"   
-        self.root_dir = os.path.dirname(os.path.abspath(__file__)) #directory the program is running from
+        self.root_dir = "" #root directory of repo or installed location
         self.working_dir = "C:\\" #directory for user data
         self.income_types = ["Work", "Investment", "Sales", "Rewards"] 
         self.expense_types = ["Transfer", "Bills", "Groceries","Takeout","Car","Travel","Entertainment","Other"] 
@@ -75,24 +72,26 @@ class MainWindow(QMainWindow):
         self.ui = Ui_OrionsApp()
         self.ui.setupUi(self)        
 
-        #-------------------Startup tasks-------------------
+        #-------------------STARTUP TASKS-------------------
 
         #Import properties
         self.ps = Properties()
 
+        #set root directory
+        if getattr(sys, 'frozen', False): #if running EXE, find installed directory
+            self.ps.root_dir = os.path.dirname(sys.executable)
+        else: #if running source, find repo directory
+            self.ps.root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
         #set working directory to program directory
         os.chdir(self.ps.root_dir)  
-
-        # start logging
-        # diary = Diary("log.txt")
-        # diary.on() 
 
         #initialize database with blank template
         MainWindow.db_init(self)
 
         try: 
             #load working dir from settings file if present
-            self.ps.working_dir = np.load(os.path.join(self.ps.root_dir,"settings.npz"), allow_pickle=True)["working_dir"].item() 
+            self.ps.working_dir = np.load(os.path.join(self.ps.root_dir,"resources\\settings.npz"), allow_pickle=True)["working_dir"].item() 
             #load db file from working directory if present, to overwrite blank template
             self.ps.db = np.load(os.path.join(self.ps.working_dir,"db.npz"), allow_pickle=True)["db"].item()
         except:
@@ -134,8 +133,8 @@ class MainWindow(QMainWindow):
         # self.ui.tableBS.setShowGrid(False)        
         # self.ui.sheetTable.setShowGrid(False)     
 
-        self.ui.actionOpen.setIcon(QIcon("assets/folder_managed_24dp_FFFFFF_FILL0_wght400_GRAD0_opsz24.svg"))
-        self.ui.actionAbout.setIcon(QIcon("assets/info_24dp_FFFFFF_FILL0_wght400_GRAD0_opsz24.svg"))
+        self.ui.actionOpen.setIcon(QIcon(os.path.join(self.ps.root_dir,"assets\\folder_managed_24dp_FFFFFF_FILL0_wght400_GRAD0_opsz24.svg")))
+        self.ui.actionAbout.setIcon(QIcon(os.path.join(self.ps.root_dir,"assets\\info_24dp_FFFFFF_FILL0_wght400_GRAD0_opsz24.svg")))
 
         #toolbar setup
         self.ui.toolBar.setMovable(False)
@@ -145,7 +144,7 @@ class MainWindow(QMainWindow):
         # self.ui.toolBar.addSeparator()
         self.add_toolbar_space(405)
 
-        self.ui.act_data_cursor = QAction(QIcon("assets/add_2_24dp_B7B7B7_FILL0_wght400_GRAD0_opsz24.svg"), "Data Cursor (Ctrl+D)", self)
+        self.ui.act_data_cursor = QAction(QIcon(os.path.join(self.ps.root_dir,"assets\\add_2_24dp_B7B7B7_FILL0_wght400_GRAD0_opsz24.svg")), "Data Cursor (Ctrl+D)", self)
         self.ui.act_data_cursor.setShortcut("Ctrl+D")
         self.ui.act_data_cursor.setCheckable(True)
         self.ui.act_data_cursor.setChecked(False)
@@ -191,8 +190,9 @@ class MainWindow(QMainWindow):
 
         pg.setConfigOptions(
             antialias=True,
-            # defaultPen=pg.mkPen(width=2)
-            )  # Enable smooth lines globally
+            useOpenGL=False,
+            )  
+        
         plotting.init(self)             
 
         #all this plot logic following should be put in a subfunction and called for each plot to not duplicate
@@ -327,7 +327,7 @@ class MainWindow(QMainWindow):
             self.ps.working_dir = folder 
 
             #write out to settings file
-            np.savez_compressed(os.path.join(self.ps.root_dir,"settings.npz"), working_dir=self.ps.working_dir)
+            np.savez_compressed(os.path.join(self.ps.root_dir,"resources\\settings.npz"), working_dir=self.ps.working_dir)
 
             status.msg.show(self, f"Workspace directory set: {folder}")                           
     #----------------------------------------------------------
@@ -731,16 +731,22 @@ if __name__ == "__main__":
     except AttributeError:
         pass      
 
-    app.setWindowIcon(QIcon("assets/finance_mode_24dp_75FB4C_FILL0_wght400_GRAD0_opsz24.ico"))
-    app.setStyle("windows11")
+    #import items from subfolders - if running from source need to go up one dir 
+    if getattr(sys, 'frozen', False): #if running EXE
+        app.setWindowIcon(QIcon("assets/finance_mode_24dp_75FB4C_FILL0_wght400_GRAD0_opsz24.svg"))
+        #import stylesheet and apply
+        with open("resources/mainstyle.qss", "r") as f:
+            _style = f.read()
+    else: #if running source
+        app.setWindowIcon(QIcon("../assets/finance_mode_24dp_75FB4C_FILL0_wght400_GRAD0_opsz24.svg"))
+        #import stylesheet and apply
+        with open("../resources/mainstyle.qss", "r") as f:
+            _style = f.read()
 
-    #import stylesheet and apply
-    with open("styling//mainstyle.qss", "r") as f:
-        _style = f.read()
-        app.setStyleSheet(_style)    
+    app.setStyleSheet(_style)    
+    app.setStyle("windows11")
 
     window = MainWindow() 
     window.setFixedSize(window.width(), window.height())        
     window.show()
-    # window.setFixedSize(1540, 825) 
     sys.exit(app.exec())
