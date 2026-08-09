@@ -7,42 +7,36 @@ def init(self):
 
     plot = self.ui.graphBS1            
     plot.showGrid(x=True, y=True)
-    # plot.setTitle("Balances vs. Time")
     plot.setLabel('left', 'Amount (USD)')
     plot.setLabel('bottom', 'Time (Year-Month)')
     plot.addLegend(offset=(2, 2))
 
     plot = self.ui.graphBS2            
     plot.showGrid(x=True, y=True)
-    # plot.setTitle("Totals vs. Time")
     plot.setLabel('left', 'Amount (USD)')
     plot.setLabel('bottom', 'Time (Year-Month)')
     plot.addLegend(offset=(2, 2))    
 
     plot = self.ui.graphBS3           
     plot.showGrid(x=True, y=True)
-    # plot.setTitle("Asset Breakdown")
     plot.setLabel('left', 'Amount (USD)')
     plot.setLabel('bottom', 'Asset')
     plot.addLegend(offset=(2, 2))     
 
     plot = self.ui.graphIE1             
     plot.showGrid(x=True, y=True)
-    # plot.setTitle("Income and Expense vs. Time")
     plot.setLabel('left', 'Amount (USD)')
     plot.setLabel('bottom', 'Time (Year-Month)')
     plot.addLegend(offset=(2, 2)) 
 
     plot = self.ui.graphIE2            
     plot.showGrid(x=True, y=True)
-    # plot.setTitle("Totals vs. Time")
     plot.setLabel('left', 'Amount (USD)')
     plot.setLabel('bottom', 'Time (Year-Month)')
     plot.addLegend(offset=(2, 2)) 
 
     plot = self.ui.graphIE3   
     plot.showGrid(x=True, y=True)
-    # plot.setTitle("Expense Breakdown")
     plot.setLabel('left', 'Amount (USD)')
     plot.setLabel('bottom', 'Category')
     plot.addLegend(offset=(2, 2)) 
@@ -114,6 +108,11 @@ def refresh(self):
     self.ui.graphIE1.addItem(self.ui.graphIE1_label, ignoreBounds=True)
     self.ui.graphIE2.addItem(self.ui.graphIE2_label, ignoreBounds=True)
     self.ui.graphIE3.addItem(self.ui.graphIE3_label, ignoreBounds=True)
+
+    #set unique labels for the plots that are only per month
+    month = self.ps.month_list[int(self.ps.month_sel) - 1]
+    self.ui.dock_BS3.setTitle(f"Asset Breakdown - {month} {self.ps.year_sel}")
+    self.ui.dock_IE3.setTitle(f"Expense Breakdown - {month} {self.ps.year_sel}")
 
     #define color order for plotting
     colors = [
