@@ -11,13 +11,14 @@ heavily borrows from PyTaskbar because although it seems to contradict some of t
 import sys
 import ctypes
 import comtypes.client as cc
-import comtypes.gen.TaskbarLib as tbl
+
 
 if not sys.platform.startswith("win"):
     WinTB = None
 else:
     try:
-        cc.GetModule("./TaskbarLib.tlb")
+        cc.GetModule("../../resources/TaskbarLib.tlb")
+        import comtypes.gen.TaskbarLib as tbl
     except:
         raise Exception("Could not find TaskbarLib.tlb")
 

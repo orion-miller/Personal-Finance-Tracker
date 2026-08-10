@@ -16,14 +16,20 @@ class prog:
         WinTB.set_state(self.tb, "normal")
         prog.config_status_prog(main_obj, 'construct') #create progress elements in status bar 
 
-    def update_val(self, main_obj, msg, value):
+    def update_val(self, main_obj, text, value, logger=None):
         WinTB.set_val(self.tb, value)         
         main_obj.ui.progress.setValue(value)
-        main_obj.ui.status_label.setText(msg)  
+        main_obj.ui.status_label.setText(text)  
 
-    def indeterminate(self, main_obj, msg):
+        #Write msg to log also
+        logger.info(text) if logger else None        
+
+    def indeterminate(self, main_obj, text, logger=None):
         WinTB.set_state(self.tb, "indeterminate")         
-        main_obj.ui.status_label.setText(msg)  
+        main_obj.ui.status_label.setText(text)  
+
+        #Write msg to log also
+        logger.info(text) if logger else None        
 
     def close(self, main_obj):
         WinTB.set_state(self.tb, "normal")          
@@ -67,13 +73,16 @@ class prog:
 
 class msg:
     @staticmethod    
-    def show(main_obj, text, color="white", duration=4000):
+    def show(main_obj, text, color="white", duration=4000, logger=None):
         """Show message and then fade it out"""
 
         # Cancel any running animation first
         if hasattr(main_obj, "_fade_anim"):
-            main_obj._fade_anim.stop()
-            msg.clear_fading_components(main_obj)
+            try:
+                main_obj._fade_anim.stop()
+                msg.clear_fading_components(main_obj)
+            except:
+                pass
 
         #Create components
         # Create a label inside the status bar
@@ -99,6 +108,9 @@ class msg:
         #Create fading text
         main_obj.ui.status_label.setText(text)        
         main_obj._fade_anim.start()    
+
+        #Write text to log also
+        logger.info(text) if logger else None
 
         main_obj._fade_anim.finished.connect(lambda: msg.clear_fading_components(main_obj))
 
