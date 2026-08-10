@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'mainwindow.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.10.1
+## Created by: Qt User Interface Compiler version 6.10.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -17,10 +17,11 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
 from PySide6.QtWidgets import (QAbstractSpinBox, QApplication, QComboBox, QGroupBox,
-    QHeaderView, QLabel, QMainWindow, QMenu,
-    QMenuBar, QPushButton, QSizePolicy, QSpinBox,
+    QHBoxLayout, QHeaderView, QLabel, QMainWindow,
+    QMdiArea, QMenu, QMenuBar, QPushButton,
+    QSizePolicy, QSpacerItem, QSpinBox, QStackedWidget,
     QStatusBar, QTabWidget, QTableView, QTextEdit,
-    QToolBar, QWidget)
+    QToolBar, QVBoxLayout, QWidget)
 
 from pyqtgraph.dockarea import DockArea
 
@@ -28,8 +29,8 @@ class Ui_OrionsApp(object):
     def setupUi(self, OrionsApp):
         if not OrionsApp.objectName():
             OrionsApp.setObjectName(u"OrionsApp")
-        OrionsApp.resize(1540, 826)
-        OrionsApp.setMinimumSize(QSize(0, 0))
+        OrionsApp.resize(1595, 826)
+        OrionsApp.setMinimumSize(QSize(1535, 826))
         OrionsApp.setTabShape(QTabWidget.TabShape.Triangular)
         self.actionOpen = QAction(OrionsApp)
         self.actionOpen.setObjectName(u"actionOpen")
@@ -41,135 +42,235 @@ class Ui_OrionsApp(object):
         self.actionAbout.setObjectName(u"actionAbout")
         self.centralwidget = QWidget(OrionsApp)
         self.centralwidget.setObjectName(u"centralwidget")
-        self.tabWidget = QTabWidget(self.centralwidget)
-        self.tabWidget.setObjectName(u"tabWidget")
-        self.tabWidget.setGeometry(QRect(410, 0, 1131, 741))
-        self.tabWidget.setContextMenuPolicy(Qt.ContextMenuPolicy.DefaultContextMenu)
-        self.tabWidget.setTabPosition(QTabWidget.TabPosition.South)
-        self.tab = QWidget()
-        self.tab.setObjectName(u"tab")
-        self.tab.setToolTipDuration(2)
-        self.BS_area = DockArea(self.tab)
-        self.BS_area.setObjectName(u"BS_area")
-        self.BS_area.setGeometry(QRect(0, 0, 1131, 711))
-        self.tabWidget.addTab(self.tab, "")
-        self.tab_2 = QWidget()
-        self.tab_2.setObjectName(u"tab_2")
-        self.IE_area = DockArea(self.tab_2)
-        self.IE_area.setObjectName(u"IE_area")
-        self.IE_area.setGeometry(QRect(0, 0, 1131, 711))
-        self.tabWidget.addTab(self.tab_2, "")
-        self.tabWidget_2 = QTabWidget(self.centralwidget)
-        self.tabWidget_2.setObjectName(u"tabWidget_2")
-        self.tabWidget_2.setGeometry(QRect(0, 240, 411, 501))
-        self.tabWidget_2.setTabPosition(QTabWidget.TabPosition.South)
-        self.tab_3 = QWidget()
-        self.tab_3.setObjectName(u"tab_3")
-        self.tableBS = QTableView(self.tab_3)
-        self.tableBS.setObjectName(u"tableBS")
-        self.tableBS.setGeometry(QRect(0, 30, 411, 451))
-        self.pushButton_add_row = QPushButton(self.tab_3)
-        self.pushButton_add_row.setObjectName(u"pushButton_add_row")
-        self.pushButton_add_row.setGeometry(QRect(240, 0, 79, 24))
-        self.pushButton_del_row = QPushButton(self.tab_3)
-        self.pushButton_del_row.setObjectName(u"pushButton_del_row")
-        self.pushButton_del_row.setGeometry(QRect(320, 0, 79, 24))
-        self.pushButton_copy_previous = QPushButton(self.tab_3)
+        self.horizontalLayout_6 = QHBoxLayout(self.centralwidget)
+        self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
+        self.verticalLayout_5 = QVBoxLayout()
+        self.verticalLayout_5.setObjectName(u"verticalLayout_5")
+        self.groupBox = QGroupBox(self.centralwidget)
+        self.groupBox.setObjectName(u"groupBox")
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.groupBox.sizePolicy().hasHeightForWidth())
+        self.groupBox.setSizePolicy(sizePolicy)
+        self.groupBox.setMinimumSize(QSize(0, 184))
+        self.groupBox.setMaximumSize(QSize(437, 184))
+        self.verticalLayout = QVBoxLayout(self.groupBox)
+        self.verticalLayout.setObjectName(u"verticalLayout")
+        self.horizontalLayout = QHBoxLayout()
+        self.horizontalLayout.setObjectName(u"horizontalLayout")
+        self.comboBox_year = QComboBox(self.groupBox)
+        self.comboBox_year.setObjectName(u"comboBox_year")
+        self.comboBox_year.setMaxVisibleItems(12)
+
+        self.horizontalLayout.addWidget(self.comboBox_year)
+
+        self.comboBox_month = QComboBox(self.groupBox)
+        self.comboBox_month.setObjectName(u"comboBox_month")
+        self.comboBox_month.setMaxVisibleItems(12)
+
+        self.horizontalLayout.addWidget(self.comboBox_month)
+
+        self.spinBox_month = QSpinBox(self.groupBox)
+        self.spinBox_month.setObjectName(u"spinBox_month")
+        self.spinBox_month.setMaximumSize(QSize(34, 16777215))
+        self.spinBox_month.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.UpDownArrows)
+        self.spinBox_month.setMinimum(-11)
+        self.spinBox_month.setMaximum(11)
+
+        self.horizontalLayout.addWidget(self.spinBox_month)
+
+        self.pushButton_loadmonth = QPushButton(self.groupBox)
+        self.pushButton_loadmonth.setObjectName(u"pushButton_loadmonth")
+
+        self.horizontalLayout.addWidget(self.pushButton_loadmonth)
+
+        self.pushButton_savemonth = QPushButton(self.groupBox)
+        self.pushButton_savemonth.setObjectName(u"pushButton_savemonth")
+
+        self.horizontalLayout.addWidget(self.pushButton_savemonth)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout)
+
+        self.label_2 = QLabel(self.groupBox)
+        self.label_2.setObjectName(u"label_2")
+
+        self.verticalLayout.addWidget(self.label_2)
+
+        self.textEdit = QTextEdit(self.groupBox)
+        self.textEdit.setObjectName(u"textEdit")
+
+        self.verticalLayout.addWidget(self.textEdit)
+
+        self.verticalLayout.setStretch(2, 1)
+
+        self.verticalLayout_5.addWidget(self.groupBox)
+
+        self.groupBox_2 = QGroupBox(self.centralwidget)
+        self.groupBox_2.setObjectName(u"groupBox_2")
+        sizePolicy.setHeightForWidth(self.groupBox_2.sizePolicy().hasHeightForWidth())
+        self.groupBox_2.setSizePolicy(sizePolicy)
+        self.groupBox_2.setMaximumSize(QSize(437, 94))
+        self.verticalLayout_2 = QVBoxLayout(self.groupBox_2)
+        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
+        self.horizontalLayout_2 = QHBoxLayout()
+        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
+        self.label_3 = QLabel(self.groupBox_2)
+        self.label_3.setObjectName(u"label_3")
+
+        self.horizontalLayout_2.addWidget(self.label_3)
+
+        self.comboBox_year_2 = QComboBox(self.groupBox_2)
+        self.comboBox_year_2.setObjectName(u"comboBox_year_2")
+        self.comboBox_year_2.setMaxVisibleItems(12)
+
+        self.horizontalLayout_2.addWidget(self.comboBox_year_2)
+
+        self.comboBox_month_2 = QComboBox(self.groupBox_2)
+        self.comboBox_month_2.setObjectName(u"comboBox_month_2")
+        self.comboBox_month_2.setMaxVisibleItems(12)
+
+        self.horizontalLayout_2.addWidget(self.comboBox_month_2)
+
+        self.pushButton_refresh = QPushButton(self.groupBox_2)
+        self.pushButton_refresh.setObjectName(u"pushButton_refresh")
+        self.pushButton_refresh.setFlat(False)
+
+        self.horizontalLayout_2.addWidget(self.pushButton_refresh)
+
+
+        self.verticalLayout_2.addLayout(self.horizontalLayout_2)
+
+        self.horizontalLayout_3 = QHBoxLayout()
+        self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
+        self.label_4 = QLabel(self.groupBox_2)
+        self.label_4.setObjectName(u"label_4")
+
+        self.horizontalLayout_3.addWidget(self.label_4)
+
+        self.comboBox_year_3 = QComboBox(self.groupBox_2)
+        self.comboBox_year_3.setObjectName(u"comboBox_year_3")
+        self.comboBox_year_3.setMaxVisibleItems(12)
+
+        self.horizontalLayout_3.addWidget(self.comboBox_year_3)
+
+        self.comboBox_month_3 = QComboBox(self.groupBox_2)
+        self.comboBox_month_3.setObjectName(u"comboBox_month_3")
+        self.comboBox_month_3.setMaxVisibleItems(12)
+
+        self.horizontalLayout_3.addWidget(self.comboBox_month_3)
+
+        self.horizontalSpacer = QSpacerItem(100, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_3.addItem(self.horizontalSpacer)
+
+
+        self.verticalLayout_2.addLayout(self.horizontalLayout_3)
+
+
+        self.verticalLayout_5.addWidget(self.groupBox_2)
+
+        self.mdiArea = QMdiArea(self.centralwidget)
+        self.mdiArea.setObjectName(u"mdiArea")
+        self.mdiArea.setMinimumSize(QSize(0, 450))
+        self.mdiArea.setMaximumSize(QSize(437, 16777215))
+        self.mdiArea.setViewMode(QMdiArea.ViewMode.TabbedView)
+        self.mdiArea.setTabPosition(QTabWidget.TabPosition.South)
+        self.BS_panel = QWidget()
+        self.BS_panel.setObjectName(u"BS_panel")
+        self.verticalLayout_4 = QVBoxLayout(self.BS_panel)
+        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
+        self.verticalLayout_4.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_4 = QHBoxLayout()
+        self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
+        self.pushButton_copy_previous = QPushButton(self.BS_panel)
         self.pushButton_copy_previous.setObjectName(u"pushButton_copy_previous")
-        self.pushButton_copy_previous.setGeometry(QRect(160, 0, 79, 24))
         font = QFont()
         font.setPointSize(8)
         self.pushButton_copy_previous.setFont(font)
         self.pushButton_copy_previous.setToolTipDuration(-1)
-        self.tabWidget_2.addTab(self.tab_3, "")
-        self.tab_4 = QWidget()
-        self.tab_4.setObjectName(u"tab_4")
-        self.sheetDropdown = QComboBox(self.tab_4)
+
+        self.horizontalLayout_4.addWidget(self.pushButton_copy_previous)
+
+        self.pushButton_add_row = QPushButton(self.BS_panel)
+        self.pushButton_add_row.setObjectName(u"pushButton_add_row")
+
+        self.horizontalLayout_4.addWidget(self.pushButton_add_row)
+
+        self.pushButton_del_row = QPushButton(self.BS_panel)
+        self.pushButton_del_row.setObjectName(u"pushButton_del_row")
+
+        self.horizontalLayout_4.addWidget(self.pushButton_del_row)
+
+
+        self.verticalLayout_4.addLayout(self.horizontalLayout_4)
+
+        self.tableBS = QTableView(self.BS_panel)
+        self.tableBS.setObjectName(u"tableBS")
+
+        self.verticalLayout_4.addWidget(self.tableBS)
+
+        self.verticalLayout_4.setStretch(1, 1)
+        self.mdiArea.addSubWindow(self.BS_panel)
+        self.IE_panel = QWidget()
+        self.IE_panel.setObjectName(u"IE_panel")
+        self.verticalLayout_3 = QVBoxLayout(self.IE_panel)
+        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
+        self.verticalLayout_3.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_5 = QHBoxLayout()
+        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
+        self.sheetDropdown = QComboBox(self.IE_panel)
         self.sheetDropdown.setObjectName(u"sheetDropdown")
-        self.sheetDropdown.setGeometry(QRect(0, 0, 208, 24))
-        self.sheetLoad = QPushButton(self.tab_4)
+        self.sheetDropdown.setMinimumSize(QSize(220, 0))
+
+        self.horizontalLayout_5.addWidget(self.sheetDropdown)
+
+        self.sheetLoad = QPushButton(self.IE_panel)
         self.sheetLoad.setObjectName(u"sheetLoad")
-        self.sheetLoad.setGeometry(QRect(240, 0, 79, 24))
-        self.sheetDelete = QPushButton(self.tab_4)
+
+        self.horizontalLayout_5.addWidget(self.sheetLoad)
+
+        self.sheetDelete = QPushButton(self.IE_panel)
         self.sheetDelete.setObjectName(u"sheetDelete")
-        self.sheetDelete.setGeometry(QRect(320, 0, 79, 24))
-        self.sheetTable = QTableView(self.tab_4)
+
+        self.horizontalLayout_5.addWidget(self.sheetDelete)
+
+
+        self.verticalLayout_3.addLayout(self.horizontalLayout_5)
+
+        self.sheetTable = QTableView(self.IE_panel)
         self.sheetTable.setObjectName(u"sheetTable")
-        self.sheetTable.setGeometry(QRect(0, 30, 411, 441))
-        self.tabWidget_2.addTab(self.tab_4, "")
-        self.groupBox = QGroupBox(self.centralwidget)
-        self.groupBox.setObjectName(u"groupBox")
-        self.groupBox.setGeometry(QRect(0, 0, 411, 151))
-        self.pushButton_loadmonth = QPushButton(self.groupBox)
-        self.pushButton_loadmonth.setObjectName(u"pushButton_loadmonth")
-        self.pushButton_loadmonth.setGeometry(QRect(240, 20, 79, 24))
-        self.pushButton_savemonth = QPushButton(self.groupBox)
-        self.pushButton_savemonth.setObjectName(u"pushButton_savemonth")
-        self.pushButton_savemonth.setGeometry(QRect(320, 20, 79, 24))
-        self.comboBox_year = QComboBox(self.groupBox)
-        self.comboBox_year.setObjectName(u"comboBox_year")
-        self.comboBox_year.setGeometry(QRect(10, 20, 80, 24))
-        self.comboBox_year.setMaxVisibleItems(12)
-        self.comboBox_month = QComboBox(self.groupBox)
-        self.comboBox_month.setObjectName(u"comboBox_month")
-        self.comboBox_month.setGeometry(QRect(90, 20, 80, 24))
-        self.comboBox_month.setMaxVisibleItems(12)
-        self.textEdit = QTextEdit(self.groupBox)
-        self.textEdit.setObjectName(u"textEdit")
-        self.textEdit.setGeometry(QRect(10, 80, 391, 61))
-        self.label_2 = QLabel(self.groupBox)
-        self.label_2.setObjectName(u"label_2")
-        self.label_2.setGeometry(QRect(10, 60, 49, 16))
-        self.spinBox_month = QSpinBox(self.groupBox)
-        self.spinBox_month.setObjectName(u"spinBox_month")
-        self.spinBox_month.setGeometry(QRect(173, 20, 33, 24))
-        self.spinBox_month.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.UpDownArrows)
-        self.spinBox_month.setMinimum(-11)
-        self.spinBox_month.setMaximum(11)
-        self.spinBox_month.raise_()
-        self.pushButton_loadmonth.raise_()
-        self.pushButton_savemonth.raise_()
-        self.comboBox_year.raise_()
-        self.comboBox_month.raise_()
-        self.textEdit.raise_()
-        self.label_2.raise_()
-        self.groupBox_2 = QGroupBox(self.centralwidget)
-        self.groupBox_2.setObjectName(u"groupBox_2")
-        self.groupBox_2.setGeometry(QRect(0, 150, 411, 81))
-        self.groupBox_2.setFlat(False)
-        self.groupBox_2.setCheckable(False)
-        self.groupBox_2.setChecked(False)
-        self.label_3 = QLabel(self.groupBox_2)
-        self.label_3.setObjectName(u"label_3")
-        self.label_3.setGeometry(QRect(10, 22, 49, 16))
-        self.label_4 = QLabel(self.groupBox_2)
-        self.label_4.setObjectName(u"label_4")
-        self.label_4.setGeometry(QRect(10, 52, 49, 16))
-        self.pushButton_refresh = QPushButton(self.groupBox_2)
-        self.pushButton_refresh.setObjectName(u"pushButton_refresh")
-        self.pushButton_refresh.setGeometry(QRect(320, 20, 79, 24))
-        self.pushButton_refresh.setFlat(False)
-        self.comboBox_year_2 = QComboBox(self.groupBox_2)
-        self.comboBox_year_2.setObjectName(u"comboBox_year_2")
-        self.comboBox_year_2.setGeometry(QRect(50, 20, 80, 24))
-        self.comboBox_year_2.setMaxVisibleItems(12)
-        self.comboBox_month_2 = QComboBox(self.groupBox_2)
-        self.comboBox_month_2.setObjectName(u"comboBox_month_2")
-        self.comboBox_month_2.setGeometry(QRect(130, 20, 80, 24))
-        self.comboBox_month_2.setMaxVisibleItems(12)
-        self.comboBox_month_3 = QComboBox(self.groupBox_2)
-        self.comboBox_month_3.setObjectName(u"comboBox_month_3")
-        self.comboBox_month_3.setGeometry(QRect(130, 50, 80, 24))
-        self.comboBox_month_3.setMaxVisibleItems(12)
-        self.comboBox_year_3 = QComboBox(self.groupBox_2)
-        self.comboBox_year_3.setObjectName(u"comboBox_year_3")
-        self.comboBox_year_3.setGeometry(QRect(50, 50, 80, 24))
-        self.comboBox_year_3.setMaxVisibleItems(12)
+
+        self.verticalLayout_3.addWidget(self.sheetTable)
+
+        self.verticalLayout_3.setStretch(1, 1)
+        self.mdiArea.addSubWindow(self.IE_panel)
+
+        self.verticalLayout_5.addWidget(self.mdiArea)
+
+        self.verticalLayout_5.setStretch(2, 1)
+
+        self.horizontalLayout_6.addLayout(self.verticalLayout_5)
+
+        self.stackedWidget = QStackedWidget(self.centralwidget)
+        self.stackedWidget.setObjectName(u"stackedWidget")
+        self.stackedWidget.setMinimumSize(QSize(1150, 0))
+        self.BS_area = DockArea()
+        self.BS_area.setObjectName(u"BS_area")
+        self.stackedWidget.addWidget(self.BS_area)
+        self.IE_area = DockArea()
+        self.IE_area.setObjectName(u"IE_area")
+        self.stackedWidget.addWidget(self.IE_area)
+
+        self.horizontalLayout_6.addWidget(self.stackedWidget)
+
+        self.horizontalLayout_6.setStretch(1, 1)
         OrionsApp.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(OrionsApp)
         self.menubar.setObjectName(u"menubar")
         self.menubar.setEnabled(True)
-        self.menubar.setGeometry(QRect(0, 0, 1540, 33))
+        self.menubar.setGeometry(QRect(0, 0, 1595, 33))
         self.menuFile = QMenu(self.menubar)
         self.menuFile.setObjectName(u"menuFile")
         self.menuHelp = QMenu(self.menubar)
@@ -183,11 +284,11 @@ class Ui_OrionsApp(object):
         OrionsApp.setStatusBar(self.statusbar)
         self.toolBar = QToolBar(OrionsApp)
         self.toolBar.setObjectName(u"toolBar")
-        sizePolicy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.toolBar.sizePolicy().hasHeightForWidth())
-        self.toolBar.setSizePolicy(sizePolicy)
+        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.toolBar.sizePolicy().hasHeightForWidth())
+        self.toolBar.setSizePolicy(sizePolicy1)
         self.toolBar.setIconSize(QSize(22, 22))
         self.toolBar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
         OrionsApp.addToolBar(Qt.ToolBarArea.TopToolBarArea, self.toolBar)
@@ -199,10 +300,6 @@ class Ui_OrionsApp(object):
 
         self.retranslateUi(OrionsApp)
 
-        self.tabWidget.setCurrentIndex(0)
-        self.tabWidget_2.setCurrentIndex(0)
-
-
         QMetaObject.connectSlotsByName(OrionsApp)
     # setupUi
 
@@ -212,35 +309,30 @@ class Ui_OrionsApp(object):
         self.actionSave.setText(QCoreApplication.translate("OrionsApp", u"Save", None))
         self.actionScreenshot.setText(QCoreApplication.translate("OrionsApp", u"Screenshot", None))
         self.actionAbout.setText(QCoreApplication.translate("OrionsApp", u"About", None))
-#if QT_CONFIG(tooltip)
-        self.tab.setToolTip(QCoreApplication.translate("OrionsApp", u"first tab", None))
-#endif // QT_CONFIG(tooltip)
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QCoreApplication.translate("OrionsApp", u"Tab 1", None))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QCoreApplication.translate("OrionsApp", u"Tab 2", None))
-        self.pushButton_add_row.setText(QCoreApplication.translate("OrionsApp", u"Add Row", None))
-        self.pushButton_del_row.setText(QCoreApplication.translate("OrionsApp", u"Delete Row", None))
+        self.groupBox.setTitle(QCoreApplication.translate("OrionsApp", u"Month", None))
+        self.comboBox_year.setPlaceholderText(QCoreApplication.translate("OrionsApp", u"Year", None))
+        self.comboBox_month.setPlaceholderText(QCoreApplication.translate("OrionsApp", u"Month", None))
+        self.pushButton_loadmonth.setText(QCoreApplication.translate("OrionsApp", u"Load", None))
+        self.pushButton_savemonth.setText(QCoreApplication.translate("OrionsApp", u"Save", None))
+        self.label_2.setText(QCoreApplication.translate("OrionsApp", u"Notes", None))
+        self.groupBox_2.setTitle(QCoreApplication.translate("OrionsApp", u"Plotting Range", None))
+        self.label_3.setText(QCoreApplication.translate("OrionsApp", u"From", None))
+        self.comboBox_year_2.setPlaceholderText(QCoreApplication.translate("OrionsApp", u"Year", None))
+        self.comboBox_month_2.setPlaceholderText(QCoreApplication.translate("OrionsApp", u"Month", None))
+        self.pushButton_refresh.setText(QCoreApplication.translate("OrionsApp", u"Refresh", None))
+        self.label_4.setText(QCoreApplication.translate("OrionsApp", u"To", None))
+        self.comboBox_year_3.setPlaceholderText(QCoreApplication.translate("OrionsApp", u"Year", None))
+        self.comboBox_month_3.setPlaceholderText(QCoreApplication.translate("OrionsApp", u"Month", None))
+        self.BS_panel.setWindowTitle(QCoreApplication.translate("OrionsApp", u"Balance Sheet", None))
 #if QT_CONFIG(tooltip)
         self.pushButton_copy_previous.setToolTip(QCoreApplication.translate("OrionsApp", u"Copy data from the previous month as a starting point", None))
 #endif // QT_CONFIG(tooltip)
         self.pushButton_copy_previous.setText(QCoreApplication.translate("OrionsApp", u"Copy Previous", None))
-        self.tabWidget_2.setTabText(self.tabWidget_2.indexOf(self.tab_3), QCoreApplication.translate("OrionsApp", u"Tab 1", None))
+        self.pushButton_add_row.setText(QCoreApplication.translate("OrionsApp", u"Add Row", None))
+        self.pushButton_del_row.setText(QCoreApplication.translate("OrionsApp", u"Delete Row", None))
+        self.IE_panel.setWindowTitle(QCoreApplication.translate("OrionsApp", u"Income + Expense", None))
         self.sheetLoad.setText(QCoreApplication.translate("OrionsApp", u"Load", None))
         self.sheetDelete.setText(QCoreApplication.translate("OrionsApp", u"Delete", None))
-        self.tabWidget_2.setTabText(self.tabWidget_2.indexOf(self.tab_4), QCoreApplication.translate("OrionsApp", u"Tab 2", None))
-        self.groupBox.setTitle(QCoreApplication.translate("OrionsApp", u"Month", None))
-        self.pushButton_loadmonth.setText(QCoreApplication.translate("OrionsApp", u"Load", None))
-        self.pushButton_savemonth.setText(QCoreApplication.translate("OrionsApp", u"Save", None))
-        self.comboBox_year.setPlaceholderText(QCoreApplication.translate("OrionsApp", u"Year", None))
-        self.comboBox_month.setPlaceholderText(QCoreApplication.translate("OrionsApp", u"Month", None))
-        self.label_2.setText(QCoreApplication.translate("OrionsApp", u"Notes", None))
-        self.groupBox_2.setTitle(QCoreApplication.translate("OrionsApp", u"Plotting", None))
-        self.label_3.setText(QCoreApplication.translate("OrionsApp", u"From", None))
-        self.label_4.setText(QCoreApplication.translate("OrionsApp", u"To", None))
-        self.pushButton_refresh.setText(QCoreApplication.translate("OrionsApp", u"Refresh", None))
-        self.comboBox_year_2.setPlaceholderText(QCoreApplication.translate("OrionsApp", u"Year", None))
-        self.comboBox_month_2.setPlaceholderText(QCoreApplication.translate("OrionsApp", u"Month", None))
-        self.comboBox_month_3.setPlaceholderText(QCoreApplication.translate("OrionsApp", u"Month", None))
-        self.comboBox_year_3.setPlaceholderText(QCoreApplication.translate("OrionsApp", u"Year", None))
         self.menuFile.setTitle(QCoreApplication.translate("OrionsApp", u"File", None))
         self.menuHelp.setTitle(QCoreApplication.translate("OrionsApp", u"Help", None))
         self.toolBar.setWindowTitle(QCoreApplication.translate("OrionsApp", u"toolBar", None))

@@ -7,14 +7,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1540</width>
+    <width>1595</width>
     <height>826</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>0</width>
-    <height>0</height>
+    <width>1535</width>
+    <height>826</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -24,441 +24,357 @@
    <enum>QTabWidget::TabShape::Triangular</enum>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QTabWidget" name="tabWidget">
-    <property name="geometry">
-     <rect>
-      <x>410</x>
-      <y>0</y>
-      <width>1131</width>
-      <height>741</height>
-     </rect>
-    </property>
-    <property name="contextMenuPolicy">
-     <enum>Qt::ContextMenuPolicy::DefaultContextMenu</enum>
-    </property>
-    <property name="tabPosition">
-     <enum>QTabWidget::TabPosition::South</enum>
-    </property>
-    <property name="currentIndex">
-     <number>0</number>
-    </property>
-    <widget class="QWidget" name="tab">
-     <property name="toolTip">
-      <string>first tab</string>
-     </property>
-     <property name="toolTipDuration">
-      <number>2</number>
-     </property>
-     <attribute name="title">
-      <string>Tab 1</string>
-     </attribute>
-     <widget class="DockArea" name="BS_area" native="true">
-      <property name="geometry">
-       <rect>
-        <x>0</x>
-        <y>0</y>
-        <width>1131</width>
-        <height>711</height>
-       </rect>
+   <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="0,1">
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout_5" stretch="0,0,1">
+      <item>
+       <widget class="QGroupBox" name="groupBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>184</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>437</width>
+          <height>184</height>
+         </size>
+        </property>
+        <property name="title">
+         <string>Month</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,1">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout">
+           <item>
+            <widget class="QComboBox" name="comboBox_year">
+             <property name="maxVisibleItems">
+              <number>12</number>
+             </property>
+             <property name="placeholderText">
+              <string>Year</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="comboBox_month">
+             <property name="maxVisibleItems">
+              <number>12</number>
+             </property>
+             <property name="placeholderText">
+              <string>Month</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSpinBox" name="spinBox_month">
+             <property name="maximumSize">
+              <size>
+               <width>34</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="buttonSymbols">
+              <enum>QAbstractSpinBox::ButtonSymbols::UpDownArrows</enum>
+             </property>
+             <property name="minimum">
+              <number>-11</number>
+             </property>
+             <property name="maximum">
+              <number>11</number>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="pushButton_loadmonth">
+             <property name="text">
+              <string>Load</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="pushButton_savemonth">
+             <property name="text">
+              <string>Save</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>Notes</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QTextEdit" name="textEdit"/>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="groupBox_2">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>437</width>
+          <height>94</height>
+         </size>
+        </property>
+        <property name="title">
+         <string>Plotting Range</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_2">
+           <item>
+            <widget class="QLabel" name="label_3">
+             <property name="text">
+              <string>From</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="comboBox_year_2">
+             <property name="maxVisibleItems">
+              <number>12</number>
+             </property>
+             <property name="placeholderText">
+              <string>Year</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="comboBox_month_2">
+             <property name="maxVisibleItems">
+              <number>12</number>
+             </property>
+             <property name="placeholderText">
+              <string>Month</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="pushButton_refresh">
+             <property name="text">
+              <string>Refresh</string>
+             </property>
+             <property name="flat">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_3">
+           <item>
+            <widget class="QLabel" name="label_4">
+             <property name="text">
+              <string>To</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="comboBox_year_3">
+             <property name="maxVisibleItems">
+              <number>12</number>
+             </property>
+             <property name="placeholderText">
+              <string>Year</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="comboBox_month_3">
+             <property name="maxVisibleItems">
+              <number>12</number>
+             </property>
+             <property name="placeholderText">
+              <string>Month</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer">
+             <property name="orientation">
+              <enum>Qt::Orientation::Horizontal</enum>
+             </property>
+             <property name="sizeType">
+              <enum>QSizePolicy::Policy::Fixed</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>100</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QMdiArea" name="mdiArea">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>450</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>437</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="viewMode">
+         <enum>QMdiArea::ViewMode::TabbedView</enum>
+        </property>
+        <property name="tabPosition">
+         <enum>QTabWidget::TabPosition::South</enum>
+        </property>
+        <widget class="QWidget" name="BS_panel">
+         <property name="windowTitle">
+          <string>Balance Sheet</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_4" stretch="0,1">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_4">
+            <item>
+             <widget class="QPushButton" name="pushButton_copy_previous">
+              <property name="font">
+               <font>
+                <pointsize>8</pointsize>
+               </font>
+              </property>
+              <property name="toolTip">
+               <string>Copy data from the previous month as a starting point</string>
+              </property>
+              <property name="toolTipDuration">
+               <number>-1</number>
+              </property>
+              <property name="text">
+               <string>Copy Previous</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_add_row">
+              <property name="text">
+               <string>Add Row</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_del_row">
+              <property name="text">
+               <string>Delete Row</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QTableView" name="tableBS"/>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="IE_panel">
+         <property name="windowTitle">
+          <string>Income + Expense</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,1">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_5">
+            <item>
+             <widget class="QComboBox" name="sheetDropdown">
+              <property name="minimumSize">
+               <size>
+                <width>220</width>
+                <height>0</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="sheetLoad">
+              <property name="text">
+               <string>Load</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="sheetDelete">
+              <property name="text">
+               <string>Delete</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QTableView" name="sheetTable"/>
+          </item>
+         </layout>
+        </widget>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="QStackedWidget" name="stackedWidget">
+      <property name="minimumSize">
+       <size>
+        <width>1150</width>
+        <height>0</height>
+       </size>
       </property>
+      <widget class="DockArea" name="BS_area"/>
+      <widget class="DockArea" name="IE_area"/>
      </widget>
-    </widget>
-    <widget class="QWidget" name="tab_2">
-     <attribute name="title">
-      <string>Tab 2</string>
-     </attribute>
-     <widget class="DockArea" name="IE_area" native="true">
-      <property name="geometry">
-       <rect>
-        <x>0</x>
-        <y>0</y>
-        <width>1131</width>
-        <height>711</height>
-       </rect>
-      </property>
-     </widget>
-    </widget>
-   </widget>
-   <widget class="QTabWidget" name="tabWidget_2">
-    <property name="geometry">
-     <rect>
-      <x>0</x>
-      <y>240</y>
-      <width>411</width>
-      <height>501</height>
-     </rect>
-    </property>
-    <property name="tabPosition">
-     <enum>QTabWidget::TabPosition::South</enum>
-    </property>
-    <property name="currentIndex">
-     <number>0</number>
-    </property>
-    <widget class="QWidget" name="tab_3">
-     <attribute name="title">
-      <string>Tab 1</string>
-     </attribute>
-     <widget class="QTableView" name="tableBS">
-      <property name="geometry">
-       <rect>
-        <x>0</x>
-        <y>30</y>
-        <width>411</width>
-        <height>451</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="pushButton_add_row">
-      <property name="geometry">
-       <rect>
-        <x>240</x>
-        <y>0</y>
-        <width>79</width>
-        <height>24</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Add Row</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="pushButton_del_row">
-      <property name="geometry">
-       <rect>
-        <x>320</x>
-        <y>0</y>
-        <width>79</width>
-        <height>24</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Delete Row</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="pushButton_copy_previous">
-      <property name="geometry">
-       <rect>
-        <x>160</x>
-        <y>0</y>
-        <width>79</width>
-        <height>24</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>8</pointsize>
-       </font>
-      </property>
-      <property name="toolTip">
-       <string>Copy data from the previous month as a starting point</string>
-      </property>
-      <property name="toolTipDuration">
-       <number>-1</number>
-      </property>
-      <property name="text">
-       <string>Copy Previous</string>
-      </property>
-     </widget>
-    </widget>
-    <widget class="QWidget" name="tab_4">
-     <attribute name="title">
-      <string>Tab 2</string>
-     </attribute>
-     <widget class="QComboBox" name="sheetDropdown">
-      <property name="geometry">
-       <rect>
-        <x>0</x>
-        <y>0</y>
-        <width>208</width>
-        <height>24</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="sheetLoad">
-      <property name="geometry">
-       <rect>
-        <x>240</x>
-        <y>0</y>
-        <width>79</width>
-        <height>24</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Load</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="sheetDelete">
-      <property name="geometry">
-       <rect>
-        <x>320</x>
-        <y>0</y>
-        <width>79</width>
-        <height>24</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Delete</string>
-      </property>
-     </widget>
-     <widget class="QTableView" name="sheetTable">
-      <property name="geometry">
-       <rect>
-        <x>0</x>
-        <y>30</y>
-        <width>411</width>
-        <height>441</height>
-       </rect>
-      </property>
-     </widget>
-    </widget>
-   </widget>
-   <widget class="QGroupBox" name="groupBox">
-    <property name="geometry">
-     <rect>
-      <x>0</x>
-      <y>0</y>
-      <width>411</width>
-      <height>151</height>
-     </rect>
-    </property>
-    <property name="title">
-     <string>Month</string>
-    </property>
-    <widget class="QPushButton" name="pushButton_loadmonth">
-     <property name="geometry">
-      <rect>
-       <x>240</x>
-       <y>20</y>
-       <width>79</width>
-       <height>24</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Load</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="pushButton_savemonth">
-     <property name="geometry">
-      <rect>
-       <x>320</x>
-       <y>20</y>
-       <width>79</width>
-       <height>24</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Save</string>
-     </property>
-    </widget>
-    <widget class="QComboBox" name="comboBox_year">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>20</y>
-       <width>80</width>
-       <height>24</height>
-      </rect>
-     </property>
-     <property name="maxVisibleItems">
-      <number>12</number>
-     </property>
-     <property name="placeholderText">
-      <string>Year</string>
-     </property>
-    </widget>
-    <widget class="QComboBox" name="comboBox_month">
-     <property name="geometry">
-      <rect>
-       <x>90</x>
-       <y>20</y>
-       <width>80</width>
-       <height>24</height>
-      </rect>
-     </property>
-     <property name="maxVisibleItems">
-      <number>12</number>
-     </property>
-     <property name="placeholderText">
-      <string>Month</string>
-     </property>
-    </widget>
-    <widget class="QTextEdit" name="textEdit">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>80</y>
-       <width>391</width>
-       <height>61</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_2">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>60</y>
-       <width>49</width>
-       <height>16</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Notes</string>
-     </property>
-    </widget>
-    <widget class="QSpinBox" name="spinBox_month">
-     <property name="geometry">
-      <rect>
-       <x>173</x>
-       <y>20</y>
-       <width>33</width>
-       <height>24</height>
-      </rect>
-     </property>
-     <property name="buttonSymbols">
-      <enum>QAbstractSpinBox::ButtonSymbols::UpDownArrows</enum>
-     </property>
-     <property name="minimum">
-      <number>-11</number>
-     </property>
-     <property name="maximum">
-      <number>11</number>
-     </property>
-    </widget>
-    <zorder>spinBox_month</zorder>
-    <zorder>pushButton_loadmonth</zorder>
-    <zorder>pushButton_savemonth</zorder>
-    <zorder>comboBox_year</zorder>
-    <zorder>comboBox_month</zorder>
-    <zorder>textEdit</zorder>
-    <zorder>label_2</zorder>
-   </widget>
-   <widget class="QGroupBox" name="groupBox_2">
-    <property name="geometry">
-     <rect>
-      <x>0</x>
-      <y>150</y>
-      <width>411</width>
-      <height>81</height>
-     </rect>
-    </property>
-    <property name="title">
-     <string>Plotting</string>
-    </property>
-    <property name="flat">
-     <bool>false</bool>
-    </property>
-    <property name="checkable">
-     <bool>false</bool>
-    </property>
-    <property name="checked">
-     <bool>false</bool>
-    </property>
-    <widget class="QLabel" name="label_3">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>22</y>
-       <width>49</width>
-       <height>16</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>From</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_4">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>52</y>
-       <width>49</width>
-       <height>16</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>To</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="pushButton_refresh">
-     <property name="geometry">
-      <rect>
-       <x>320</x>
-       <y>20</y>
-       <width>79</width>
-       <height>24</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Refresh</string>
-     </property>
-     <property name="flat">
-      <bool>false</bool>
-     </property>
-    </widget>
-    <widget class="QComboBox" name="comboBox_year_2">
-     <property name="geometry">
-      <rect>
-       <x>50</x>
-       <y>20</y>
-       <width>80</width>
-       <height>24</height>
-      </rect>
-     </property>
-     <property name="maxVisibleItems">
-      <number>12</number>
-     </property>
-     <property name="placeholderText">
-      <string>Year</string>
-     </property>
-    </widget>
-    <widget class="QComboBox" name="comboBox_month_2">
-     <property name="geometry">
-      <rect>
-       <x>130</x>
-       <y>20</y>
-       <width>80</width>
-       <height>24</height>
-      </rect>
-     </property>
-     <property name="maxVisibleItems">
-      <number>12</number>
-     </property>
-     <property name="placeholderText">
-      <string>Month</string>
-     </property>
-    </widget>
-    <widget class="QComboBox" name="comboBox_month_3">
-     <property name="geometry">
-      <rect>
-       <x>130</x>
-       <y>50</y>
-       <width>80</width>
-       <height>24</height>
-      </rect>
-     </property>
-     <property name="maxVisibleItems">
-      <number>12</number>
-     </property>
-     <property name="placeholderText">
-      <string>Month</string>
-     </property>
-    </widget>
-    <widget class="QComboBox" name="comboBox_year_3">
-     <property name="geometry">
-      <rect>
-       <x>50</x>
-       <y>50</y>
-       <width>80</width>
-       <height>24</height>
-      </rect>
-     </property>
-     <property name="maxVisibleItems">
-      <number>12</number>
-     </property>
-     <property name="placeholderText">
-      <string>Year</string>
-     </property>
-    </widget>
-   </widget>
+    </item>
+   </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="enabled">
@@ -468,7 +384,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1540</width>
+     <width>1595</width>
      <height>33</height>
     </rect>
    </property>
