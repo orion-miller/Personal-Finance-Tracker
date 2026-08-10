@@ -180,27 +180,29 @@ def refresh(self):
     fig = self.ui.graphBS3  
 
     # Data
-    dtable = self.ps.db[self.ps.year_sel][self.ps.month_sel]["bs"]
-    # cats = list(dtable['Item'])
+    try:
+        dtable = self.ps.db[self.ps.year_sel][self.ps.month_sel]["bs"]
 
-    x = np.arange(len(dtable['Item']))
-    x_idx = 0
-    labels = []
+        x = np.arange(len(dtable['Item']))
+        x_idx = 0
+        labels = []
 
-    for i, item in enumerate(dtable['Item']):  
-        if dtable['Amount'][i] <= 0: #only plot positive vals for assets            
-            continue
-        else: #plot category
-            bar = pg.BarGraphItem(x=x_idx, height=dtable['Amount'][i], width=1, brush=colors[i], pen='w')
-            fig.addItem(bar)
+        for i, item in enumerate(dtable['Item']):  
+            if dtable['Amount'][i] <= 0: #only plot positive vals for assets            
+                continue
+            else: #plot category
+                bar = pg.BarGraphItem(x=x_idx, height=dtable['Amount'][i], width=1, brush=colors[i], pen='w')
+                fig.addItem(bar)
 
-            x_idx += 1            
-            labels.append(item)
+                x_idx += 1            
+                labels.append(item)
 
-    # Custom x-axis labels  
-    ax = fig.getAxis('bottom')
-    ax.setTicks([[(i, label) for i, label in enumerate(labels)]])
-    fig.setXRange(-0.6, len(labels) - 0.4) 
+        # Custom x-axis labels  
+        ax = fig.getAxis('bottom')
+        ax.setTicks([[(i, label) for i, label in enumerate(labels)]])
+        fig.setXRange(-0.6, len(labels) - 0.4) 
+    except:
+        pass
 
     #Income Expense 1
     fig = self.ui.graphIE1  
@@ -230,27 +232,32 @@ def refresh(self):
     fig = self.ui.graphIE3  
 
     # Data
-    dtable = self.ps.db[self.ps.year_sel][self.ps.month_sel]["ie_cat"]
+    try:
+        dtable = self.ps.db[self.ps.year_sel][self.ps.month_sel]["ie_cat"]
 
-    if dtable != {}:
-        cats = dtable.keys()
+        if dtable != {}:
+            cats = dtable.keys()
 
-        x = np.arange(len(cats))
-        x_idx = 0
-        labels = []
+            x = np.arange(len(cats))
+            x_idx = 0
+            labels = []
 
-        for i, cat in enumerate(cats):  
-            if dtable[cat] >= 0 or cat == 'Transfer': #only plot negative vals for expenses, ignore transfers            
-                continue
-            else: #plot category
-                bar = pg.BarGraphItem(x=x_idx, height=dtable[cat], width=1, brush=colors[i], pen='w')
-                fig.addItem(bar)
+            for i, cat in enumerate(cats):  
+                if dtable[cat] >= 0 or cat == 'Transfer': #only plot negative vals for expenses, ignore transfers            
+                    continue
+                else: #plot category
+                    bar = pg.BarGraphItem(x=x_idx, height=dtable[cat], width=1, brush=colors[i], pen='w')
+                    fig.addItem(bar)
 
-                x_idx += 1            
-                labels.append(cat)
+                    x_idx += 1            
+                    labels.append(cat)
 
-        # Custom x-axis labels
-        cats = dtable.keys()    
-        ax = fig.getAxis('bottom')
-        ax.setTicks([[(i, label) for i, label in enumerate(labels)]])
-        fig.setXRange(-0.6, len(labels) - 0.4) 
+            # Custom x-axis labels
+            cats = dtable.keys()    
+            ax = fig.getAxis('bottom')
+            ax.setTicks([[(i, label) for i, label in enumerate(labels)]])
+            fig.setXRange(-0.6, len(labels) - 0.4) 
+
+    except:
+        pass        
+        
