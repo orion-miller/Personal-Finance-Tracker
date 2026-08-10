@@ -28,6 +28,7 @@ import ollama
 #Project modules, functions
 from utils.ui_models import TableModel, ComboBoxDelegate
 from utils import plotting, status, calc_metrics
+from utils.app_logger import setup_logging
 
 #COMPILATION CMD:
 # pyside6-uic mainwindow.ui -o mainwindow.py
@@ -57,13 +58,13 @@ class Properties:
         }   
         }
         self.year_list = ["2020", "2021", "2022", "2023", "2024", "2025", "2026"] #make editable through ui later
-        self.month_list = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"] #make editable through ui later
-        self.year_sel = "2025"
-        self.month_sel = "12"
+        self.month_list = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"] 
+        self.year_sel = "2026"
+        self.month_sel = "1"
         self.year_p1 = "2024"
         self.month_p1 = "12"
-        self.year_p2 = "2025"
-        self.month_p2 = "12"
+        self.year_p2 = "2026"
+        self.month_p2 = "6"
         self.active_plot = ""    
 
 class MainWindow(QMainWindow):
@@ -101,21 +102,23 @@ class MainWindow(QMainWindow):
                 f'Could not find the database file "db.npz" in the working directory: {self.ps.working_dir} \n\Initialized a new blank database. If you have an existing database, please set the working directory to its location and restart the program.'
             )
 
-        #Set initial component properties
-        self.setWindowTitle(f"{self.ps.APP_NAME} {self.ps.APP_VERSION}")
+        #Set up log file
+        logger = setup_logging()
+        logger.info("Application started")
+        logger.debug("Detailed debug info (only visible when level=DEBUG)")
+        logger.warning("Something suspicious happened")
+        logger.error("Failed to connect to database", exc_info=True)            
 
-        self.ui.tabWidget.setTabText(0, "Balance Sheet")
-        self.ui.tabWidget.setTabText(1, "Income + Expense")    
-        self.ui.tabWidget_2.setTabText(0, "Balance Sheet")
-        self.ui.tabWidget_2.setTabText(1, "Income + Expense")        
+        #Set initial component properties
+        self.setWindowTitle(f"{self.ps.APP_NAME} {self.ps.APP_VERSION}")  
 
         self.ui.sheetTable.horizontalHeader().setDefaultAlignment(Qt.AlignLeft | Qt.AlignVCenter)
 
         self.ui.comboBox_year.addItems(self.ps.year_list)        
         self.ui.comboBox_month.addItems(self.ps.month_list)
         # self.ui.comboBox_month.setItemData([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])        
-        self.ui.comboBox_year.setCurrentText("2025")
-        self.ui.comboBox_month.setCurrentText("Dec")
+        self.ui.comboBox_year.setCurrentText("2026")
+        self.ui.comboBox_month.setCurrentText("Jun")
         self.ui.spinBox_month.setValue(-1*self.ui.comboBox_month.currentIndex()) #needs to match the index (*-1) of the combo box above       
         self.ui.comboBox_year_2.addItems(self.ps.year_list)        
         self.ui.comboBox_month_2.addItems(self.ps.month_list)
@@ -131,7 +134,11 @@ class MainWindow(QMainWindow):
         self.ui.tableBS.setAlternatingRowColors(True)
         self.ui.sheetTable.setAlternatingRowColors(True)
         # self.ui.tableBS.setShowGrid(False)        
-        # self.ui.sheetTable.setShowGrid(False)     
+        # self.ui.sheetTable.setShowGrid(False)  
+
+        # clear default icon from showing on subwindows
+        self.ui.IE_panel.setWindowIcon(QIcon())   
+        self.ui.BS_panel.setWindowIcon(QIcon())         
 
         self.ui.actionOpen.setIcon(QIcon(os.path.join(self.ps.root_dir,"assets\\folder_managed_24dp_FFFFFF_FILL0_wght400_GRAD0_opsz24.svg")))
         self.ui.actionAbout.setIcon(QIcon(os.path.join(self.ps.root_dir,"assets\\info_24dp_FFFFFF_FILL0_wght400_GRAD0_opsz24.svg")))
@@ -142,7 +149,7 @@ class MainWindow(QMainWindow):
         self.ui.toolBar.setIconSize(PySide6.QtCore.QSize(22, 22))
 
         # self.ui.toolBar.addSeparator()
-        self.add_toolbar_space(405)
+        self.add_toolbar_space(420)
 
         self.ui.act_data_cursor = QAction(QIcon(os.path.join(self.ps.root_dir,"assets\\add_2_24dp_B7B7B7_FILL0_wght400_GRAD0_opsz24.svg")), "Data Cursor (Ctrl+D)", self)
         self.ui.act_data_cursor.setShortcut("Ctrl+D")
@@ -293,8 +300,7 @@ class MainWindow(QMainWindow):
         self.ui.pushButton_refresh.clicked.connect(self.refresh_plots)    
         self.ui.pushButton_loadmonth.clicked.connect(self.load_month)            
         self.ui.pushButton_savemonth.clicked.connect(self.save_month)
-        self.ui.tabWidget.currentChanged.connect(self.on_tab_changed)
-        self.ui.tabWidget_2.currentChanged.connect(self.on_tab_changed_2)
+        self.ui.mdiArea.subWindowActivated.connect(self.on_tab_changed_2)
         self.ui.comboBox_month.currentIndexChanged.connect(self.month_changed)
         self.ui.spinBox_month.valueChanged.connect(self.month_spinbox_changed)        
         self.ui.comboBox_month_2.currentIndexChanged.connect(self.month_changed)    
@@ -335,7 +341,7 @@ class MainWindow(QMainWindow):
         QMessageBox.information(
             self,
             "About",
-            f"Finance Tracker\nVersion: {self.ps.APP_VERSION}\n\nContact: orion.miller@outlook.com"
+            f"Finance Tracker\nVersion: {self.ps.APP_VERSION}"
         )
     #----------------------------------------------------------
     def add_toolbar_space(self, width: int):
@@ -386,23 +392,17 @@ class MainWindow(QMainWindow):
             # label.setText(f"x: {x:.2f}\ny: {y:.3f}")            
             label.setPos(x, y)  # small offset — adjust as needed
     #----------------------------------------------------------
-    def on_tab_changed(self, index):
-        tab_name = self.ui.tabWidget.tabText(index)
+    def on_tab_changed_2(self, sub_window):
+        #change plotting tab according to selected subwindow
 
-        match tab_name:
-            case "Balance Sheet":
-                self.ui.tabWidget_2.setCurrentIndex(0)
-            case "Income + Expense":        
-                self.ui.tabWidget_2.setCurrentIndex(1)
-    #----------------------------------------------------------
-    def on_tab_changed_2(self, index):
-        tab_name = self.ui.tabWidget_2.tabText(index)
+        if sub_window is not None:
+            tab_name = sub_window.windowTitle()
 
-        match tab_name:
-            case "Balance Sheet":
-                self.ui.tabWidget.setCurrentIndex(0)
-            case "Income + Expense":        
-                self.ui.tabWidget.setCurrentIndex(1)      
+            match tab_name:
+                case "Balance Sheet":
+                    self.ui.stackedWidget.setCurrentIndex(0)
+                case "Income + Expense":        
+                    self.ui.stackedWidget.setCurrentIndex(1)      
     #----------------------------------------------------------
     def bs_copy_previous(self):
         #copy balance sheet from previous month into current month
@@ -643,6 +643,126 @@ class MainWindow(QMainWindow):
  
             status.msg.show(self, f"Sheet deleted: {sheet_name}")              
     #----------------------------------------------------------
+    def _parse_amount_series(self, series):
+        """Coerce a column of mixed currency strings/numbers to float."""
+        return pd.to_numeric(
+            series.astype(str)
+                  .str.replace(r"[\$,]", "", regex=True)
+                  .str.strip()
+                  .replace({"": "0", "nan": "0", "None": "0"}),
+            errors="coerce"
+        ).fillna(0.0)
+
+    def _normalize_transaction_csv(self, file_path):
+        """
+        Load a bank/card CSV and normalize to:
+            Date | Amount | Type | Description
+
+        Supported layouts:
+          1) No header (legacy): Date, Amount, x, y, Description
+          2) DATE, DESCRIPTION, AMOUNT, CHECK #, STATUS
+          3) Date, Time, Cardholder, Amount, Points, Balance, Status, Type, Merchant, Description
+          4) Transaction Date, Posted Date, Card No., Description, Category, Debit, Credit
+        """
+        # Peek header row only (if the file has no real header, these will be data values)
+        peek = pd.read_csv(file_path, nrows=0)
+        headers = [str(c).strip().strip('"') for c in peek.columns]
+        h_upper = {h.upper(): h for h in headers}
+        h_set = set(h_upper.keys())
+
+        def col(*names):
+            """Return the original column name matching any of the given names (case-insensitive)."""
+            for name in names:
+                if name.upper() in h_upper:
+                    return h_upper[name.upper()]
+            return None
+
+        # --- Format 4: Debit / Credit split (credit-card style) ---
+        if "TRANSACTION DATE" in h_set and ("DEBIT" in h_set or "CREDIT" in h_set):
+            df_raw = pd.read_csv(file_path)
+            df_raw.columns = [str(c).strip().strip('"') for c in df_raw.columns]
+
+            date_col = col("Transaction Date", "Posted Date")
+            desc_col = col("Description")
+            debit_col = col("Debit")
+            credit_col = col("Credit")
+
+            debit = self._parse_amount_series(df_raw[debit_col]) if debit_col else 0.0
+            credit = self._parse_amount_series(df_raw[credit_col]) if credit_col else 0.0
+            # Convention: positive = income/inflow, negative = expense/outflow
+            amount = credit - debit
+
+            df = pd.DataFrame({
+                "Date": df_raw[date_col],
+                "Amount": amount,
+                "Type": "-",
+                "Description": df_raw[desc_col].astype(str) if desc_col else "",
+            })
+
+        # --- Format 3: rewards / card export with Merchant ---
+        elif "CARDHOLDER" in h_set or ("MERCHANT" in h_set and "POINTS" in h_set):
+            df_raw = pd.read_csv(file_path)
+            df_raw.columns = [str(c).strip().strip('"') for c in df_raw.columns]
+
+            date_col = col("Date")
+            amount_col = col("Amount")
+            desc_col = col("Description")
+            merchant_col = col("Merchant")
+
+            # Prefer Description; fall back to Merchant; combine when both differ
+            if desc_col and merchant_col:
+                desc = df_raw[desc_col].fillna("").astype(str).str.strip()
+                merchant = df_raw[merchant_col].fillna("").astype(str).str.strip()
+                description = desc.where(desc != "", merchant)
+                both = (desc != "") & (merchant != "") & (desc != merchant)
+                description = description.where(~both, merchant + " - " + desc)
+            elif desc_col:
+                description = df_raw[desc_col].astype(str)
+            elif merchant_col:
+                description = df_raw[merchant_col].astype(str)
+            else:
+                description = ""
+
+            df = pd.DataFrame({
+                "Date": df_raw[date_col],
+                "Amount": self._parse_amount_series(df_raw[amount_col])*-1,
+                "Type": "-",  # bank "Type" is not our category field
+                "Description": description,
+            })
+
+        # --- Format 2: simple checking export ---
+        elif "DATE" in h_set and "AMOUNT" in h_set and "DESCRIPTION" in h_set:
+            df_raw = pd.read_csv(file_path)
+            df_raw.columns = [str(c).strip().strip('"') for c in df_raw.columns]
+
+            date_col = col("Date", "DATE")
+            amount_col = col("Amount", "AMOUNT")
+            desc_col = col("Description", "DESCRIPTION")
+
+            df = pd.DataFrame({
+                "Date": df_raw[date_col],
+                "Amount": self._parse_amount_series(df_raw[amount_col]),
+                "Type": "-",
+                "Description": df_raw[desc_col].astype(str) if desc_col else "",
+            })
+
+        # --- Format 1: legacy no-header files ---
+        else:
+            df_raw = pd.read_csv(
+                file_path, header=None,
+                names=["Date", "Amount", "x", "y", "Description"]
+            )
+            df = pd.DataFrame({
+                "Date": df_raw["Date"],
+                "Amount": self._parse_amount_series(df_raw["Amount"]),
+                "Type": "-",
+                "Description": df_raw["Description"].astype(str),
+            })
+
+        # Drop fully empty rows that some exports include as trailers
+        df = df.dropna(how="all", subset=["Date", "Amount"]).reset_index(drop=True)
+        return df
+
     def load_csv(self):
         # File dialog with CSV filter
         file_path, _ = QFileDialog.getOpenFileName(
@@ -656,12 +776,7 @@ class MainWindow(QMainWindow):
             return  # User cancelled
         
         try:
-            df = pd.read_csv(
-                file_path, header=None, names=['Date', 'Amount', 'x', 'y','Description']
-            )
-            # remove unneeded columns then insert "type" column between Date and Amount
-            df.drop(df.columns[[2,3]], axis=1, inplace=True)
-            df.insert(2, "Type", "-")
+            df = self._normalize_transaction_csv(file_path)
 
             TB = status.prog(self)
             
@@ -671,20 +786,28 @@ class MainWindow(QMainWindow):
 
                 # assign initial categorizations of items using ollama
                 if df['Amount'][i] > 0:
-                    response = ollama.chat(model='gemma3:4b', messages=[{
-                        'role': 'user',
-                        'content': f"Return only one category from this list that best matches the expense. Return only the category itself. List: {', '.join(self.ps.income_types)}\n\nDescription: {df['Description'][i]}\n\nCategory:"
-                    }])
+                    try:
+                        response = ollama.chat(model='gemma3:4b', messages=[{
+                            'role': 'user',
+                            'content': f"Return only one category from this list that best matches the expense. Return only the category itself. List: {', '.join(self.ps.income_types)}\n\nDescription: {df['Description'][i]}\n\nCategory:"
+                        }])
+                        response_isolated = response['message']['content'].strip() 
+                    except Exception as e:
+                        response_isolated = self.ps.income_types[0]
+                        print(f"Error occurred while fetching response for row {i}: {e}")
                 else:
-                    response = ollama.chat(model='gemma3:4b', messages=[{
-                        'role': 'user',
-                        'content': f"Return only one category from this list that best matches the expense. Return only the category itself. List: {', '.join(self.ps.expense_types)}\n\nDescription: {df['Description'][i]}\n\nCategory:"
-                    }])
-
-                response_isolated = response['message']['content'].strip() 
-
-                if response_isolated in self.ps.expense_types:
-                    df['Type'].loc[i] = response_isolated                                   
+                    try:                        
+                        response = ollama.chat(model='gemma3:4b', messages=[{
+                            'role': 'user',
+                            'content': f"Return only one category from this list that best matches the expense. Return only the category itself. List: {', '.join(self.ps.expense_types)}\n\nDescription: {df['Description'][i]}\n\nCategory:"
+                        }])
+                        response_isolated = response['message']['content'].strip() 
+                    except Exception as e:
+                        response_isolated = self.ps.expense_types[0]
+                        print(f"Error occurred while fetching response for row {i}: {e}")                    
+               
+                if response_isolated in self.ps.income_expense_types:
+                    df.loc[i, "Type"] = response_isolated
 
             status.prog.close(TB, self)      
 
@@ -707,6 +830,10 @@ class MainWindow(QMainWindow):
 
         except Exception as e:
             QMessageBox.critical(self, "Error Loading CSV", str(e))  
+            try:
+                status.prog.close(TB, self) 
+            except:
+                pass
     #----------------------------------------------------------
     def refresh_plots(self):   
         #check that the time range selected on the dropdowns is valid - end date must be after start date
@@ -731,22 +858,16 @@ if __name__ == "__main__":
     except AttributeError:
         pass      
 
-    #import items from subfolders - if running from source need to go up one dir 
-    if getattr(sys, 'frozen', False): #if running EXE
-        app.setWindowIcon(QIcon("assets/finance_mode_24dp_75FB4C_FILL0_wght400_GRAD0_opsz24.svg"))
-        #import stylesheet and apply
-        with open("resources/mainstyle.qss", "r") as f:
-            _style = f.read()
-    else: #if running source
-        app.setWindowIcon(QIcon("../assets/finance_mode_24dp_75FB4C_FILL0_wght400_GRAD0_opsz24.svg"))
-        #import stylesheet and apply
-        with open("../resources/mainstyle.qss", "r") as f:
-            _style = f.read()
+    #import items from subfolders
+    app.setWindowIcon(QIcon("../assets/finance_mode_24dp_75FB4C_FILL0_wght400_GRAD0_opsz24.svg"))
+    #import stylesheet and apply
+    with open("../resources/mainstyle.qss", "r") as f:
+        _style = f.read()
 
     app.setStyleSheet(_style)    
     app.setStyle("windows11")
 
     window = MainWindow() 
-    window.setFixedSize(window.width(), window.height())        
+    # window.setFixedSize(window.width(), window.height())        
     window.show()
     sys.exit(app.exec())

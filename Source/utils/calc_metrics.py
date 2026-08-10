@@ -12,6 +12,7 @@ def calc_metrics(self, year, month):
     #populate balance sheet fields
     bs_amt = self.ps.db[year][month]["bs"]['Amount']
     if len(bs_amt) > 0:
+        self.ps.db[year][month]["bs_met"] = {} #for error that sometimes happens when adding new month
         self.ps.db[year][month]["bs_met"]["Assets"] = np.sum(bs_amt[bs_amt > 0])  
         self.ps.db[year][month]["bs_met"]["Debts"] = np.sum(bs_amt[bs_amt < 0])  
         self.ps.db[year][month]["bs_met"]["Assets - Debts"] = self.ps.db[year][month]["bs_met"]["Assets"] + self.ps.db[year][month]["bs_met"]["Debts"]     
